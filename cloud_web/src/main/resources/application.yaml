@@ -21,8 +21,3 @@ spring:
     name: mysql_connect
 mybatis:
   mapper-locations: classpath:mapper/*.xml
-
-redisson:
-  address: "redis://127.0.0.1:6379"
-  password: null
-  database: 0
