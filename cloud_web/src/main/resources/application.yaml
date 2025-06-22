@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      password: 123456
+
+  datasource:
+    druid:
+      url: jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false
+      password: mysql
+      username: root
+      db-type: mysql
+
+    type: com.alibaba.druid.pool.DruidDataSource
+    name: mysql_connect
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
