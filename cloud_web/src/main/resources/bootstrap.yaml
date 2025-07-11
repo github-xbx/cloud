@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: cloud-web
+  profiles:
+    active: dev
+
+  cloud:
+    # nacos配置本地覆盖远程 本地优先
+    config:
+      allow-override: true
+      override-none: false
+      override-system-properties: false
+    nacos:
+      config:
+        group: cloud_dev
+        server-addr: 127.0.0.1:8848
+        username: nacos
+        password: nacos
+        namespace: 84a08f82-b992-4126-b377-0dbf92707fa9
+        file-extension: yaml
+        refresh-enabled: true
+      discovery:
+        group: cloud_dev
+        server-addr: 127.0.0.1:8848
+        username: nacos
+        password: nacos
+        namespace: 84a08f82-b992-4126-b377-0dbf92707fa9
