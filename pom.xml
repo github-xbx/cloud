@@ -33,10 +33,11 @@
     </scm>
 
     <properties>
-        <java.version>17</java.version>
-        <spring.boot.version>3.3.2</spring.boot.version>
-        <spring.cloud.version>2023.0.3</spring.cloud.version>
-        <spring.cloud.albaba.version>2023.0.1.0</spring.cloud.albaba.version>
+        <java.version>21</java.version>
+        <spring.boot.version>3.5.14</spring.boot.version>
+        <spring.cloud.version>2025.0.2</spring.cloud.version>
+        <spring.cloud.albaba.version>2023.0.3.4</spring.cloud.albaba.version>
+        <dubbo.version>3.3.6</dubbo.version>
     </properties>
 
     <dependencyManagement>
@@ -70,7 +71,7 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-bom</artifactId>
-                <version>3.2.9</version>
+                <version>${dubbo.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
