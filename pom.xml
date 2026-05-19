@@ -24,6 +24,7 @@
         <module>common</module>
         <module>cloud_gateway</module>
         <module>cloud_web</module>
+        <module>network_netty</module>
     </modules>
     <scm>
         <connection/>
@@ -38,6 +39,7 @@
         <spring.cloud.version>2025.0.2</spring.cloud.version>
         <spring.cloud.albaba.version>2023.0.3.4</spring.cloud.albaba.version>
         <dubbo.version>3.3.6</dubbo.version>
+        <netty.version>4.1.131.Final</netty.version>
     </properties>
 
     <dependencyManagement>
@@ -82,6 +84,16 @@
                 <version>3.2.9</version>
                 <type>pom</type>
             </dependency>
+
+            <!--netty-->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${netty.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
 
         </dependencies>
 
