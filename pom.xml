@@ -41,6 +41,13 @@
         <dubbo.version>3.3.6</dubbo.version>
         <netty.version>4.1.131.Final</netty.version>
     </properties>
+    <!--常用 scope 值及作用  -->
+    <!--compile (默认) 依赖会全程参与编译、测试、运行，并被打包到最终的 JAR/WAR 中-->
+    <!--provided 仅参与编译和测试，不会被打包到最终的 JAR/WAR 中，但运行时由运行环境（如 Web 容器、JDK）提供。-->
+    <!--runtime 运行时依赖，仅参与编译、测试，会被打包到最终制品中。-->
+    <!--test 依赖仅在测试编译和测试运行阶段可用，它们不需要出现在生产代码或最终制品中。-->
+    <!--system 与 provided 类似，但依赖不是从 Maven 仓库获取，而是通过 <systemPath> 显式指定磁盘路径。-->
+    <!--import 仅在 <dependencyManagement> 中有效，用于引入一个 BOM（依赖清单）中的所有依赖管理信息-->
 
     <dependencyManagement>
         <dependencies>
