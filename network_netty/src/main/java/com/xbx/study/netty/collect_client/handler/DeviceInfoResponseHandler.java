@@ -27,17 +27,17 @@ public class DeviceInfoResponseHandler extends SimpleChannelInboundHandler<Devic
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DeviceInfoResponse deviceInfoResponse) throws Exception {
-        logger.info("客户端 => 处理服务端 读取设备信息 请求");
+        logger.debug("客户端 => 处理服务端 读取设备信息 请求");
         try {
-            logger.info("send message body {}", deviceInfoRequest);
+            logger.debug("send message body {}", deviceInfoRequest);
             //发送的消息不在handler 中定义，由客户端定义
             ctx.writeAndFlush(deviceInfoRequest).addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
-                    logger.info("客户端 => 发送设备信息请求成功");
+                    logger.debug("客户端 => 发送设备信息请求成功");
                 }
             });
         }catch (Exception e) {
-            logger.info("客户端 => 设备响应消息处理失败", e);
+            logger.error("客户端 => 设备响应消息处理失败", e);
         }
     }
 }

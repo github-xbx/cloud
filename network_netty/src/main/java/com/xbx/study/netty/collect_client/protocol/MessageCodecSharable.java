@@ -118,6 +118,8 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, PaveMes
         RECORD_READ_RESP(3, Direction.IN, ReadRecordResponse.class, "记录读取响应"),
         REAL_TIME_REQ(4, Direction.OUT, RealTimeRequest.class, "实时数据请求"),
         REAL_TIME_RESP(4, Direction.IN, RealTimeResponse.class, "实时数据响应"),
+        WIND_SPEED_UNIT_REQ(17, Direction.OUT, SetWindSpeedUnitRequest.class, "风速单位请求"),
+        WIND_SPEED_UNIT_RESP(17, Direction.IN, SetWindSpeedUnitResponse.class, "风速单位响应"),
         ;
         int frame;
         Direction direction;
