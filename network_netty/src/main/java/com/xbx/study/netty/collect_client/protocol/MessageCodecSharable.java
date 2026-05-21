@@ -51,7 +51,6 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, PaveMes
             CRC16IBM crc16 = new CRC16IBM();
             crc16.update(crc, 0, crc.length);
             long crcVal = crc16.getValue();
-            System.out.println("crcVal=" + crcVal);
             out.writeShort((int)crcVal);
 
             out.resetReaderIndex();
