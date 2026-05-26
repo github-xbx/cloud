@@ -25,6 +25,7 @@
         <module>cloud_gateway</module>
         <module>cloud_web</module>
         <module>network_netty</module>
+        <module>basic_lock</module>
     </modules>
     <scm>
         <connection/>
