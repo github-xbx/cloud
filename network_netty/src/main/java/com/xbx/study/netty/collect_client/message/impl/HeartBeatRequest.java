@@ -13,14 +13,30 @@ public class HeartBeatRequest extends BasePaveMessage implements PaveMessageOutp
     /**
      * 未确认记录数
      */
-    private final int noConfirm = 0;
+    private final long noConfirm = 0;
+
+
+    public HeartBeatRequest() {
+        super();
+        setFrame(1);
+    }
 
     /**
      *  编码 心跳请求
      */
     @Override
     public void encode(ByteBuf buf) {
-        buf.writeInt(noConfirm);
+        buf.writeInt((int) noConfirm);
 
+    }
+
+    @Override
+    public String toString() {
+        return "HeartBeatRequest{" +
+                "noConfirm=" + noConfirm +
+                ", BasePaveMessage{frame=" + frame +
+                ", sequence=" + sequence +
+                ", crcValid=" + crcValid +
+                "} }";
     }
 }

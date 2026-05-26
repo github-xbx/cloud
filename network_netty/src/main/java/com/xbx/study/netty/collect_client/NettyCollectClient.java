@@ -1,6 +1,7 @@
 package com.xbx.study.netty.collect_client;
 
 import com.xbx.study.netty.collect_client.handler.DeviceInfoResponseHandler;
+import com.xbx.study.netty.collect_client.handler.HeartBeatResponseHandler;
 import com.xbx.study.netty.collect_client.handler.ReadRecordResponseHandler;
 import com.xbx.study.netty.collect_client.handler.SetWindSpeedUnitHandler;
 import com.xbx.study.netty.collect_client.message.impl.DeviceInfoRequest;
@@ -67,6 +68,7 @@ public class NettyCollectClient implements DisposableBean {
                         ch.pipeline().addLast(new IdleStateHandler(0, 30, 0));
                         ch.pipeline().addLast(new ProtocolFrameDecoder());
                         ch.pipeline().addLast(new MessageCodecSharable() );
+                        ch.pipeline().addLast(new HeartBeatResponseHandler()); //心跳处理
                         ch.pipeline().addLast(new DeviceInfoResponseHandler(deviceInfoRequest)); //处理设备信息读取 handler
                         ch.pipeline().addLast(new ReadRecordResponseHandler()); //处理数据读取 handler
                         ch.pipeline().addLast(new SetWindSpeedUnitHandler());   //处理风速单位设置 handler
