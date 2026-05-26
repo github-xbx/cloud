@@ -71,12 +71,21 @@ public class NettyCollectClient implements DisposableBean {
                         ch.pipeline().addLast(new HeartBeatResponseHandler()); //心跳处理
                         ch.pipeline().addLast(new DeviceInfoResponseHandler(deviceInfoRequest)); //处理设备信息读取 handler
                         ch.pipeline().addLast(new ReadRecordResponseHandler()); //处理数据读取 handler
-                        ch.pipeline().addLast(new SetWindSpeedUnitHandler());   //处理风速单位设置 handler
+                        ch.pipeline().addLast(new SetWindSpeedUnitHandler());   //处理风速单位设置handler
                     }
                 });
         ChannelFuture future = bootstrap.connect(address).sync();
         channel = future.channel();
-        logger.info("Netty 客户端启动并连接到 {}:{}",address.getHostString(), address.getPort());
+        logger.info("Netty 客户端启动并连接到{}:{}",address.getHostString(), address.getPort());
+
+        // 注册 JVM shutdown hook，确保程序退出时释放 Netty 资源
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                destroy();
+            } catch (Exception e) {
+                logger.error("销毁 Netty 客户端失败", e);
+            }
+        }));
     }
 
 
