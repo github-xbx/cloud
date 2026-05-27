@@ -1,0 +1,150 @@
+# ============================
+# Redisson 配置（3.50.0）
+# ============================
+
+# -------------------------------------------------
+# 单机模式（默认启用）
+# 切换模式：注释掉 singleServerConfig，取消对应段注释
+# -------------------------------------------------
+singleServerConfig:
+  # 连接地址，格式：redis://IP:端口，SSL 用 rediss://
+  address: "redis://127.0.0.1:6379"
+  # 数据库索引（0~15）
+  database: 0
+  # 认证密码，无密码设为 null
+  password: null
+  # 客户端名称，可通过 CLIENT LIST 在 Redis 侧查看
+  clientName: null
+  # 用户名（Redis 6.0+ ACL），低版本留 null
+  username: null
+
+  # ---- 连接池 ----
+  # 最小空闲连接数，低于此值时主动创建连接填充
+  connectionMinimumIdleSize: 10
+  # 连接池最大连接数
+  connectionPoolSize: 64
+  # 空闲连接超时（毫秒），超时后释放
+  idleConnectionTimeout: 10000
+  # 建立 TCP 连接超时（毫秒）
+  connectTimeout: 10000
+  # 等待 Redis 命令响应超时（毫秒）
+  timeout: 3000
+  # 命令执行失败重试次数
+  retryAttempts: 3
+  # 命令重试间隔（毫秒）
+  retryInterval: 1500
+
+  # ---- 订阅连接池 ----
+  # 发布/订阅最小空闲连接数
+  subscriptionConnectionMinimumIdleSize: 1
+  # 发布/订阅最大连接数
+  subscriptionConnectionPoolSize: 50
+  # 每个连接最大订阅数
+  subscriptionsPerConnection: 5
+  # 订阅操作超时（毫秒）
+  subscriptionTimeout: 7500
+
+  # ---- 网络 ----
+  # DNS 监控间隔（毫秒），0 = 禁用
+  dnsMonitoringInterval: 5000
+  # 心跳间隔（毫秒），定期发送 PING 保活，0 = 不发心跳
+  pingConnectionInterval: 0
+  # TCP keepAlive 开关
+  keepAlive: true
+  # TCP_NODELAY，禁用 Nagle 算法，降低延迟
+  tcpNoDelay: true
+  # TCP keepAlive 空闲时间（秒），0 = 系统默认
+  tcpKeepAliveIdle: 0
+  # TCP keepAlive 探测间隔（秒），0 = 系统默认
+  tcpKeepAliveInterval: 0
+  # TCP keepAlive 探测次数，0 = 系统默认
+  tcpKeepAliveCount: 0
+  # TCP 用户超时（毫秒），0 = 不设置
+  tcpUserTimeout: 0
+
+  # ---- SSL/TLS ----
+  # 启用 SSL 端点身份验证（SNI）
+  sslEnableEndpointIdentification: false
+  # SSL 实现：JDK / OPENSSL
+  sslProvider: JDK
+  # SSL 协议，如 TLSv1.2,TLSv1.3，null = 默认
+  sslProtocols: null
+  # SSL 加密套件，null = 默认
+  sslCiphers: null
+  # SSL 验证模式：STRICT（严格）/ LENIENT（宽松）
+  sslVerificationMode: STRICT
+  # 信任库路径（CA 证书）
+  sslTruststore: null
+  # 信任库密码
+  sslTruststorePassword: null
+  # 客户端密钥库路径（双向认证/MTLS 时使用）
+  sslKeystore: null
+  # 客户端密钥库密码
+  sslKeystorePassword: null
+  # 信任库/密钥库类型：JKS / PKCS12 / PEM
+  sslKeystoreType: JKS
+
+# ============================
+# 全局配置（所有模式通用）
+# ============================
+
+# Redisson 内部线程数（异步回调、锁续期等）
+# 0 = CPU 核心数 * 2
+threads: 0
+# Netty I/O 线程数
+# 0 = CPU 核心数 * 2
+nettyThreads: 0
+# 传输模式：NIO（默认）/ EPOLL（Linux 原生高性能）
+transportMode: NIO
+
+# 序列化方式
+# 可选：JsonJacksonCodec（默认）、KryoCodec、FstCodec、MsgPackJacksonCodec
+codec: !<org.redisson.codec.JsonJacksonCodec> {}
+
+# 锁看门狗超时（毫秒），默认 30000
+# 持锁客户端宕机后此时间自动释放
+# 锁自动续期间隔 = 此值 / 3
+lockWatchdogTimeout: 30000
+# 获取锁时是否检查从节点已同步锁信息
+# true = 从节点未同步时不返回锁，安全性更高
+checkLockSyncedSlaves: true
+
+# 是否启用延迟初始化
+# true = 首次使用时才建立连接，而非启动时
+lazyInitialization: false
+# 是否启用脚本缓存
+# true = Lua 脚本缓存到 Redis，减少 EVALSHA 开销
+useScriptCache: false
+# 是否启用对象引用支持
+# true = 可存储 Java 对象引用关系
+referenceEnabled: false
+# 是否使用线程上下文 ClassLoader
+# false = 使用 Redisson 自己的 ClassLoader
+useThreadClassLoader: true
+# 是否保持 Pub/Sub 消息顺序
+# true = 按发送顺序接收，false = 允许乱序
+keepPubSubOrder: true
+
+# 公平锁等待超时（毫秒）
+# 公平锁等待队列中超过此时间自动放弃
+fairLockWaitTimeout: 30000
+
+# 从节点同步超时（毫秒）
+# 主从模式下等待从节点同步的超时时间
+slavesSyncTimeout: 10000
+
+# ReliableTopic 看门狗超时（毫秒）
+# 消费者宕机后此时间自动移除
+reliableTopicWatchdogTimeout: 10000
+# 锁看门狗批量处理大小
+# 同时续期的锁数量上限
+lockWatchdogBatchSize: 50
+
+# ---- 过期 Key 清理 ----
+# 每次清理的过期 key 数量
+cleanUpKeysAmount: 100
+# 最小清理间隔（秒）
+minCleanUpDelay: 5
+# 最大清理间隔（秒）
+maxCleanUpDelay: 1800
+

@@ -1,0 +1,103 @@
+# ============================
+# Redisson 集群配置（3.50.0）
+# 三主三从：127.0.0.1:6379/6378/6388/6389/6398/6399
+# ============================
+
+clusterServersConfig:
+  # 集群节点地址列表，至少写一个，自动发现其余节点
+  nodeAddresses:
+    - "redis://127.0.0.1:6379"
+    - "redis://127.0.0.1:6378"
+    - "redis://127.0.0.1:6388"
+    - "redis://127.0.0.1:6389"
+    - "redis://127.0.0.1:6398"
+    - "redis://127.0.0.1:6399"
+
+  # 读模式：SLAVE（从节点读）/ MASTER（主节点读）/ MASTER_SLAVE（自适应）
+  readMode: SLAVE
+  # 认证密码，无密码设为 null
+  password: null
+  # 用户名（Redis 6.0+ ACL）
+  username: null
+
+  # ---- 主节点连接池 ----
+  # 主节点最小空闲连接数
+  masterConnectionMinimumIdleSize: 10
+  # 主节点最大连接数
+  masterConnectionPoolSize: 64
+
+  # ---- 从节点连接池 ----
+  # 从节点最小空闲连接数
+  slaveConnectionMinimumIdleSize: 10
+  # 从节点最大连接数
+  slaveConnectionPoolSize: 64
+
+  # ---- 超时与重试 ----
+  # 空闲连接超时（毫秒）
+  idleConnectionTimeout: 10000
+  # TCP 连接超时（毫秒）
+  connectTimeout: 10000
+  # 命令超时（毫秒）
+  timeout: 3000
+  # 命令失败重试次数
+  retryAttempts: 3
+  # 命令重试间隔（毫秒）
+  retryInterval: 1500
+
+  # ---- 订阅连接池 ----
+  subscriptionConnectionMinimumIdleSize: 1
+  subscriptionConnectionPoolSize: 50
+  subscriptionsPerConnection: 5
+  subscriptionTimeout: 7500
+
+  # ---- 集群拓扑 ----
+  # 集群拓扑扫描间隔（毫秒），定期刷新节点列表和槽位映射
+  scanInterval: 1000
+  # 启动时是否检查 slot 覆盖完整性
+  # true = 若有 slot 未覆盖则启动失败
+  checkSlotsCoverage: true
+
+  # ---- 网络 ----
+  dnsMonitoringInterval: 5000
+  pingConnectionInterval: 0
+  keepAlive: true
+  tcpNoDelay: true
+  tcpKeepAliveIdle: 0
+  tcpKeepAliveInterval: 0
+  tcpKeepAliveCount: 0
+  tcpUserTimeout: 0
+
+  # ---- SSL ----
+  sslEnableEndpointIdentification: false
+  sslProvider: JDK
+  sslProtocols: null
+  sslCiphers: null
+  sslVerificationMode: STRICT
+  sslTruststore: null
+  sslTruststorePassword: null
+  sslKeystore: null
+  sslKeystorePassword: null
+  sslKeystoreType: JKS
+
+# ============================
+# 全局配置
+# ============================
+threads: 0
+nettyThreads: 0
+transportMode: NIO
+codec: !<org.redisson.codec.JsonJacksonCodec> {}
+lockWatchdogTimeout: 30000
+checkLockSyncedSlaves: true
+lazyInitialization: false
+useScriptCache: false
+referenceEnabled: false
+useThreadClassLoader: true
+keepPubSubOrder: true
+fairLockWaitTimeout: 30000
+slavesSyncTimeout: 10000
+reliableTopicWatchdogTimeout: 10000
+lockWatchdogBatchSize: 50
+cleanUpKeysAmount: 100
+minCleanUpDelay: 5
+maxCleanUpDelay: 1800
+

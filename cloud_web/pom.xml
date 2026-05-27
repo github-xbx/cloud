@@ -31,10 +31,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter -->
+        <!-- redisson 纯库，无自动配置，通过 BeanConfiguration 按需加载 -->
         <dependency>
             <groupId>org.redisson</groupId>
-            <artifactId>redisson-spring-boot-starter</artifactId>
+            <artifactId>redisson</artifactId>
             <version>3.50.0</version>
         </dependency>
         <dependency>
