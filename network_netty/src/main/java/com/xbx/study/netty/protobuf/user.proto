@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+//生成文件所在的包名
+option java_package = "com.xbx.study.netty.protoBuf";
+//生成的java文件名
+option java_outer_classname = "UserProtobuf";
+
+//message 关键字定义了一个User消息实例
+//protobuf 在序列化的时候 会将User消息实例序列化为二进制
+//protobuf 在反序列化的时候 会将二进制反序列化为User对象
+
+message User{
+
+  //protobuf 的数据类型有 int32 string int64 enum map bool byte float double uint32 uint64
+
+  //每个字段都要设置一个唯一的数字序号
+  //这个数字编号是protobuf 序列化为二进制消息时候标识每个字段
+  int32 uid = 1;
+  CommandType cmd =2;
+  string content = 3;
+  map<string, int32> intMap = 4;
+  enum CommandType{
+
+    //每个枚举类型必须将其第一个类型映射为0
+
+    NORMAL = 0;
+    HEARTBEAT_REQUEST = 1;
+    HEARTBEAT_RESPONSE = 2;
+
+  }
+}

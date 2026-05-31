@@ -28,7 +28,6 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-buffer</artifactId>
-            <version>4.1.131.Final</version>
         </dependency>
 
         <!-- 通用编解码器（处理粘包/拆包） -->
@@ -60,6 +59,23 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-transport</artifactId>
         </dependency>
+
+
+
+        <!-- Protobuf Java 核心库 -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${protobuf.version}</version>
+        </dependency>
+
+        <!-- Protobuf Java Util（JSON 转换、Struct 等工具） -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java-util</artifactId>
+            <version>${protobuf.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.xbx.study.common</groupId>
             <artifactId>common</artifactId>

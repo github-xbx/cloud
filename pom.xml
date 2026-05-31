@@ -41,6 +41,7 @@
         <spring.cloud.albaba.version>2023.0.3.4</spring.cloud.albaba.version>
         <dubbo.version>3.3.6</dubbo.version>
         <netty.version>4.1.131.Final</netty.version>
+        <protobuf.version>4.35.0</protobuf.version>
     </properties>
     <!--常用 scope 值及作用  -->
     <!--compile (默认) 依赖会全程参与编译、测试、运行，并被打包到最终的 JAR/WAR 中-->
