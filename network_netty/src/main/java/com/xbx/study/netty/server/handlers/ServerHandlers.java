@@ -2,9 +2,12 @@ package com.xbx.study.netty.server.handlers;
 
 import com.xbx.study.common.constants.NettySceneEnum;
 import com.xbx.study.netty.protobuf.UserProtobuf;
+import com.xbx.study.netty.server.decoder.MultiProtobufDecoder;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,9 +74,10 @@ public class ServerHandlers {
                 }
                 case PROTOBUF -> {
                     List<ChannelHandler> protobufList = List.of(
+                            new LoggingHandler(LogLevel.DEBUG),
                             new ServerChannelEventHandler(),
                             new ProtobufVarint32FrameDecoder(),
-                            new ProtobufDecoder(UserProtobuf.User.getDefaultInstance()),
+                            new MultiProtobufDecoder(),
                             new ServerProtobufHandler());
                     yield new ServerHandlers(protobufList);
                 }

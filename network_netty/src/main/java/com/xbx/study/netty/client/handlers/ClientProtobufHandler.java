@@ -1,6 +1,7 @@
 package com.xbx.study.netty.client.handlers;
 
 import com.xbx.study.netty.protobuf.UserProtobuf;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
@@ -23,7 +24,13 @@ public class ClientProtobufHandler extends SimpleChannelInboundHandler<UserProto
                 .setUid(1)
                 .build();
         logger.info("客户端发送消息，{}",user.toString());
-        ctx.writeAndFlush(user);
+
+        // 手动拼 typeId + body
+        ByteBuf buf = ctx.alloc().buffer();
+        buf.writeByte(1);  // typeId = User
+        byte[] body = user.toByteArray();
+        buf.writeBytes(body);
+        ctx.writeAndFlush(buf);
 
     }
 }
