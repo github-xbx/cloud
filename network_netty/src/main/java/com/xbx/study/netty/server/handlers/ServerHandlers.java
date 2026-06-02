@@ -1,10 +1,8 @@
 package com.xbx.study.netty.server.handlers;
 
 import com.xbx.study.common.constants.NettySceneEnum;
-import com.xbx.study.netty.protobuf.UserProtobuf;
-import com.xbx.study.netty.server.decoder.MultiProtobufDecoder;
+import com.xbx.study.netty.server.decoder.ProtobufMessageCodec;
 import io.netty.channel.ChannelHandler;
-import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
@@ -77,7 +75,7 @@ public class ServerHandlers {
                             new LoggingHandler(LogLevel.DEBUG),
                             new ServerChannelEventHandler(),
                             new ProtobufVarint32FrameDecoder(),
-                            new MultiProtobufDecoder(),
+                            new ProtobufMessageCodec(),
                             new ServerProtobufHandler());
                     yield new ServerHandlers(protobufList);
                 }
