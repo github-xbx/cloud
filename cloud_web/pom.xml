@@ -54,6 +54,11 @@
             <version>1.2.9</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+        </dependency>
+
         <!--在spring cloud 2020.0.2版本中把bootstrap的相关依赖从spring-cloud-starter-config中移除了，
        所以需要单独引入spring-cloud-starter-bootstrap 依赖。-->
         <dependency>
