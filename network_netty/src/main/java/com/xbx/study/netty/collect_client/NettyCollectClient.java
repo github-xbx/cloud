@@ -1,9 +1,6 @@
 package com.xbx.study.netty.collect_client;
 
-import com.xbx.study.netty.collect_client.handler.DeviceInfoResponseHandler;
-import com.xbx.study.netty.collect_client.handler.HeartBeatResponseHandler;
-import com.xbx.study.netty.collect_client.handler.ReadRecordResponseHandler;
-import com.xbx.study.netty.collect_client.handler.SetWindSpeedUnitHandler;
+import com.xbx.study.netty.collect_client.handler.*;
 import com.xbx.study.netty.collect_client.message.impl.DeviceInfoRequest;
 import com.xbx.study.netty.collect_client.protocol.MessageCodecSharable;
 import com.xbx.study.netty.collect_client.protocol.ProtocolFrameDecoder;
@@ -68,10 +65,11 @@ public class NettyCollectClient implements DisposableBean {
                         ch.pipeline().addLast(new IdleStateHandler(0, 30, 0));
                         ch.pipeline().addLast(new ProtocolFrameDecoder());
                         ch.pipeline().addLast(new MessageCodecSharable() );
-                        ch.pipeline().addLast(new HeartBeatResponseHandler()); //心跳处理
+                        //ch.pipeline().addLast(new HeartBeatResponseHandler()); //心跳处理
                         ch.pipeline().addLast(new DeviceInfoResponseHandler(deviceInfoRequest)); //处理设备信息读取 handler
                         ch.pipeline().addLast(new ReadRecordResponseHandler()); //处理数据读取 handler
                         ch.pipeline().addLast(new SetWindSpeedUnitHandler());   //处理风速单位设置handler
+                        ch.pipeline().addLast(new WriteConfigDataHandler());    //处理写补偿温度
                     }
                 });
         ChannelFuture future = bootstrap.connect(address).sync();
@@ -79,13 +77,13 @@ public class NettyCollectClient implements DisposableBean {
         logger.info("Netty 客户端启动并连接到{}:{}",address.getHostString(), address.getPort());
 
         // 注册 JVM shutdown hook，确保程序退出时释放 Netty 资源
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                destroy();
-            } catch (Exception e) {
-                logger.error("销毁 Netty 客户端失败", e);
-            }
-        }));
+//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//            try {
+//                destroy();
+//            } catch (Exception e) {
+//                logger.error("销毁 Netty 客户端失败", e);
+//            }
+//        }));
     }
 
 
