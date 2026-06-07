@@ -1,5 +1,7 @@
 package com.xbx.study.web.config;
 
+import org.quartz.Scheduler;
+import org.quartz.impl.StdSchedulerFactory;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -23,5 +25,15 @@ public class BeanConfiguration {
         );
         return Redisson.create(config);
     }
+
+
+    @Bean(destroyMethod = "shutdown")
+    public Scheduler scheduler() throws Exception {
+        StdSchedulerFactory factory = new StdSchedulerFactory();
+        Scheduler scheduler = factory.getScheduler();
+        scheduler.start();
+        return scheduler;
+    }
+
 
 }

@@ -3,5 +3,17 @@
 <mapper namespace="com.xbx.study.web.mapper.JobMapper">
 
 
+    <select id="selectAllJob" >
+        select * from job
+    </select>
+
+    <select id="selectJobById">
+        select * from job where id = #{param1}
+    </select>
+
+    <insert id="insertJob">
+        insert into job(job_name, job_group, invoke_target, cron, policy, concurrent, status, remark, create_by, create_time)
+        values (#{jobName}, #{jobGroup}, #{invokeTarget}, #{cron},#{policy},#{concurrent},#{status},#{remark},#{createBy},#{createTime})
+    </insert>
 
 </mapper>
