@@ -28,6 +28,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-buffer</artifactId>
+            <version>4.1.131.Final</version>
         </dependency>
 
         <!-- 通用编解码器（处理粘包/拆包） -->
