@@ -12,6 +12,7 @@ spring:
       override-system-properties: false
     nacos:
       config:
+        enabled: false
         group: cloud_dev
         server-addr: 127.0.0.1:8848
         username: nacos
@@ -20,6 +21,7 @@ spring:
         file-extension: yaml
         refresh-enabled: true
       discovery:
+        enabled: false
         group: cloud_dev
         server-addr: 127.0.0.1:8848
         username: nacos

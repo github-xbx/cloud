@@ -31,10 +31,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter -->
+        <!-- redisson 纯库，无自动配置，通过 BeanConfiguration 按需加载 -->
         <dependency>
             <groupId>org.redisson</groupId>
-            <artifactId>redisson-spring-boot-starter</artifactId>
+            <artifactId>redisson</artifactId>
             <version>3.50.0</version>
         </dependency>
         <dependency>
@@ -53,6 +53,13 @@
             <artifactId>druid-spring-boot-starter</artifactId>
             <version>1.2.9</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+
+
 
         <!--在spring cloud 2020.0.2版本中把bootstrap的相关依赖从spring-cloud-starter-config中移除了，
        所以需要单独引入spring-cloud-starter-bootstrap 依赖。-->
