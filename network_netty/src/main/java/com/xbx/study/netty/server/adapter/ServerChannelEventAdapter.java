@@ -1,4 +1,4 @@
-package com.xbx.study.netty.server.handlers;
+package com.xbx.study.netty.server.adapter;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -13,9 +13,9 @@ import java.net.InetSocketAddress;
  * 服务端 Channel 事件监听器
  * 监听客户端的连接、断开、异常、心跳超时等事件
  */
-public class ServerChannelEventHandler extends ChannelInboundHandlerAdapter {
+public class ServerChannelEventAdapter extends ChannelInboundHandlerAdapter {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServerChannelEventHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerChannelEventAdapter.class);
 
     /**
      * 客户端连接建立（channel 激活）

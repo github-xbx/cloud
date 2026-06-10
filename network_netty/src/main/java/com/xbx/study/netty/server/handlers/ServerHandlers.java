@@ -1,6 +1,7 @@
 package com.xbx.study.netty.server.handlers;
 
 import com.xbx.study.common.constants.NettySceneEnum;
+import com.xbx.study.netty.server.adapter.ServerChannelEventAdapter;
 import com.xbx.study.netty.server.decoder.ProtobufMessageCodec;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
@@ -62,18 +63,18 @@ public class ServerHandlers {
             return switch (scene) {
                 case BASIC -> {
                     List<ChannelHandler> list = List.of(
-                            new ServerChannelEventHandler(),
+                            new ServerChannelEventAdapter(),
                             new IdleStateHandler(30,0,0, TimeUnit.SECONDS));
                     yield new ServerHandlers(list);
                 }
                 case HTTP -> {
-                    List<ChannelHandler> httpList = List.of(new ServerChannelEventHandler());
+                    List<ChannelHandler> httpList = List.of(new ServerChannelEventAdapter());
                     yield new ServerHandlers(httpList);
                 }
                 case PROTOBUF -> {
                     List<ChannelHandler> protobufList = List.of(
                             new LoggingHandler(LogLevel.DEBUG),
-                            new ServerChannelEventHandler(),
+                            new ServerChannelEventAdapter(),
                             new ProtobufVarint32FrameDecoder(),
                             new ProtobufMessageCodec(),
                             new ServerProtobufHandler());
