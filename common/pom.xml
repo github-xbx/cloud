@@ -36,6 +36,13 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
 
+        <!-- Source: https://mvnrepository.com/artifact/com.aliyun/alibabacloud-oss-v2 -->
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>alibabacloud-oss-v2</artifactId>
+            <version>0.4.1</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 
