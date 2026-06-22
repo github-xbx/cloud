@@ -1,0 +1,6 @@
+grpc:
+  server:
+    port: 10000
+    address: *
+    max-inbound-message-size: 10MB
+    max-inbound-metadata-size: 20MB

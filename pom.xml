@@ -27,6 +27,7 @@
         <module>network_netty</module>
         <module>basic_lock</module>
         <module>_test</module>
+        <module>GRPC</module>
     </modules>
     <scm>
         <connection/>
@@ -43,6 +44,9 @@
         <dubbo.version>3.3.6</dubbo.version>
         <netty.version>4.1.131.Final</netty.version>
         <protobuf.version>4.35.0</protobuf.version>
+        <!-- grpc -->
+        <protoc.version>3.25.8</protoc.version>
+        <grpc.version>1.82.0</grpc.version>
     </properties>
     <!--常用 scope 值及作用  -->
     <!--compile (默认) 依赖会全程参与编译、测试、运行，并被打包到最终的 JAR/WAR 中-->
@@ -79,6 +83,15 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- 导入 gRPC BOM，统一管理所有 gRPC 依赖的版本 -->
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-bom</artifactId>
+                <version>${grpc.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!--dubbo-->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
@@ -87,6 +100,8 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+
             <!--zookeeper-->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
