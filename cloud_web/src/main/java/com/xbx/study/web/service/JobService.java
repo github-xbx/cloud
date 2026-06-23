@@ -29,7 +29,7 @@ public class JobService  {
     }
 
 
-    @PostConstruct
+    //@PostConstruct
     public void init() throws Exception {
 
         List<ProjectJob> list = jobMapper.selectAllJob();

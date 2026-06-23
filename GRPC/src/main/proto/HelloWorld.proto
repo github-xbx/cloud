@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+
+option java_multiple_files = true;
+option java_package = "com.xbx.study.GRPC.proto";
+option java_outer_classname = "HelloWorldProto";
+option objc_class_prefix = "HLW";
+
+
+//服务定义
+service Greeter{
+  //客户端一发服务端一收模式
+  rpc SayHello (HelloRequest) returns (HelloReply){}
+
+  //客户端多发 服务端一收模式
+  rpc SayHelloClientStream (stream HelloRequest) returns (HelloReply){}
+
+  //客户端一发 服务端多发模式
+  rpc SayHelloServerStream (HelloRequest) returns (stream HelloReply) {}
+
+  //双向流式：双方多发
+  rpc SayHelloSCStream (stream HelloRequest) returns (stream HelloReply) {}
+}
+
+//请求消息
+message HelloRequest {
+  string name = 1;
+}
+
+//响应消息
+message HelloReply {
+  string message = 1;
+}

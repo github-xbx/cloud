@@ -102,28 +102,23 @@ public class JobInvokeUtil {
         for (int i = 0; i < methodParams.length; i++) {
             String str = StringUtils.trimToEmpty(methodParams[i]);
             // String字符串类型，以'或"开头
-            if (StringUtils.startsWithAny(str, "'", "\""))
-            {
+            if (StringUtils.startsWithAny(str, "'", "\"")) {
                 classs.add(new Object[] { StringUtils.substring(str, 1, str.length() - 1), String.class });
             }
             // boolean布尔类型，等于true或者false
-            else if ("true".equalsIgnoreCase(str) || "false".equalsIgnoreCase(str))
-            {
+            else if ("true".equalsIgnoreCase(str) || "false".equalsIgnoreCase(str)) {
                 classs.add(new Object[] { Boolean.valueOf(str), Boolean.class });
             }
             // long长整形，以L结尾
-            else if (StringUtils.endsWith(str, "L"))
-            {
+            else if (StringUtils.endsWith(str, "L")) {
                 classs.add(new Object[] { Long.valueOf(StringUtils.substring(str, 0, str.length() - 1)), Long.class });
             }
             // double浮点类型，以D结尾
-            else if (StringUtils.endsWith(str, "D"))
-            {
+            else if (StringUtils.endsWith(str, "D")) {
                 classs.add(new Object[] { Double.valueOf(StringUtils.substring(str, 0, str.length() - 1)), Double.class });
             }
             // 其他类型归类为整形
-            else
-            {
+            else {
                 classs.add(new Object[] { Integer.valueOf(str), Integer.class });
             }
         }
@@ -139,8 +134,7 @@ public class JobInvokeUtil {
     public static Class<?>[] getMethodParamsType(List<Object[]> methodParams) {
         Class<?>[] classs = new Class<?>[methodParams.size()];
         int index = 0;
-        for (Object[] os : methodParams)
-        {
+        for (Object[] os : methodParams) {
             classs[index] = (Class<?>) os[1];
             index++;
         }
@@ -156,8 +150,7 @@ public class JobInvokeUtil {
     public static Object[] getMethodParamsValue(List<Object[]> methodParams) {
         Object[] classs = new Object[methodParams.size()];
         int index = 0;
-        for (Object[] os : methodParams)
-        {
+        for (Object[] os : methodParams) {
             classs[index] = (Object) os[0];
             index++;
         }
