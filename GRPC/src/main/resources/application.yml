@@ -1,6 +1,11 @@
 grpc:
   server:
     port: 10000
-    address: *
+    #address: *
     max-inbound-message-size: 10MB
     max-inbound-metadata-size: 20MB
+
+spring:
+  gson:
+    # 让 Gson 关闭 HTML 转义
+    disable-html-escaping: true

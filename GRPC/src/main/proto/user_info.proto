@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+
+option java_multiple_files = true;
+option java_package = "com.xbx.study.GRPC.proto";
+option java_outer_classname = "UserInfoProto";
+option objc_class_prefix = "HLW";
+
+
+
+service UserService {
+  rpc getAllUserInfo(Request) returns (Response){}
+}
+
+
+message UserInfo {
+  int64 userId = 1;
+  string username = 2;
+}
+
+message Request{
+  int64 requestId = 1;
+  oneof param {
+    UserInfo user = 2;
+    int32 pageNo = 3;
+    int32 pageNum = 4;
+    string keywords = 5;
+  }
+}
+
+message Response {
+  int64 responseId = 1;  //<==> requestId
+  repeated UserInfo userinfo = 2;  //关键字 repeated 可重复的 表示数组/列表
+}
