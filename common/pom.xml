@@ -29,7 +29,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.4.8-jre</version>
+            <!-- 版本由父 POM dependencyManagement 统一管理 -->
         </dependency>
 
         <dependency>

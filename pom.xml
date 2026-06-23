@@ -47,6 +47,7 @@
         <!-- grpc -->
         <protoc.version>3.25.8</protoc.version>
         <grpc.version>1.82.0</grpc.version>
+        <guava.version>33.5.0-jre</guava.version>
     </properties>
     <!--常用 scope 值及作用  -->
     <!--compile (默认) 依赖会全程参与编译、测试、运行，并被打包到最终的 JAR/WAR 中-->
@@ -117,6 +118,13 @@
                 <version>${netty.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- 强制统一 Guava 版本，覆盖 gRPC BOM 里的 android 版 -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
             </dependency>
 
 
