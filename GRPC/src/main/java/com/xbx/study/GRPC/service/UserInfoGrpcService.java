@@ -9,6 +9,7 @@ import com.xbx.study.GRPC.proto.UserServiceGrpc;
 
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.List;
  * grpc 整合进spring 中 grpc server java bean
  */
 @GrpcService
+//@Service
 public class UserInfoGrpcService extends UserServiceGrpc.UserServiceImplBase {
 
 

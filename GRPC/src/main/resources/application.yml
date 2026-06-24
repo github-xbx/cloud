@@ -1,11 +1,31 @@
+server:
+  port: 10001
+
 grpc:
   server:
     port: 10000
     #address: *
     max-inbound-message-size: 10MB
     max-inbound-metadata-size: 20MB
+  client:
+    local-rpc:
+      address: static://localhost:10000
+      negotiation-type: PLAINTEXT
+      # ====== 常用可选 ======
+      default-load-balancing-policy: round_robin  # 负载均衡策略
+      enable-keep-alive: true            # 开启心跳
+      keep-alive-time: 30s               # 心跳间隔
+      keep-alive-timeout: 10s            # 心跳超时
+      keep-alive-without-calls: true     # 无活跃调用时也发心跳
+      max-inbound-message-size: 10MB     # 最大接收消息大小
+      max-inbound-metadata-size: 20MB    # 最大接收元数据大小
+
+
+
 
 spring:
+  application:
+    name: GRPC
   gson:
     # 让 Gson 关闭 HTML 转义
     disable-html-escaping: true
