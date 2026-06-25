@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.xbx.study.GRPC.collect.proto";
+option java_outer_classname = "FileOperationsProto";
+
+import "collect/common/common_message.proto";
+
+package collect;
+
+message FileServerMsg {
+
+  string filePath = 1;
+  string directoryPath = 2;
+  string newName = 3;
+
+  bool isDirectory = 100;
+
+  enum operations {
+    LIST = 0;
+    NEW_FOLDER = 1;
+    RENAME = 2;
+    DELETE = 3;
+  }
+
+}
+
+message FileClientMsg {
+  map<string, string> fileItems = 1;
+}
+
+
+service FileOperations {
+
+  /** 文件操作流 */
+  rpc fileOperationStream(stream FileClientMsg) returns (collect.common.ServerMessage) {}
+
+}
