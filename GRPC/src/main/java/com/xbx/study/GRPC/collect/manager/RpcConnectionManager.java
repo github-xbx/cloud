@@ -1,13 +1,11 @@
 package com.xbx.study.GRPC.collect.manager;
 
-import com.xbx.study.GRPC.collect.common.proto.ServerMessage;
-import com.xbx.study.GRPC.collect.proto.FileClientMsg;
-import io.grpc.stub.StreamObserver;
+import com.google.protobuf.Message;
+import com.xbx.study.GRPC.collect.grpc.session.ClientSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,41 +14,18 @@ public class RpcConnectionManager {
 
     private static final Logger logger = LoggerFactory.getLogger(RpcConnectionManager.class);
 
-    private final Map<String, StreamObserver<ServerMessage>> rpcClient = new ConcurrentHashMap<>();
+
+    private final Map<String, ClientSession<? extends Message, ? extends Message>> _MAP = new ConcurrentHashMap<>();
 
 
-    public void register(String deviceId, StreamObserver<ServerMessage> streamObserver) {
-        rpcClient.put(deviceId, streamObserver);
-        logger.info("device register : {}", deviceId);
+    public void register(String id, ClientSession<? extends Message, ? extends Message> session) {
+        _MAP.put(id,session);
+        logger.info("device register : {} ",id);
     }
 
-    public void unregister(String deviceId) {
-        rpcClient.remove(deviceId);
-        logger.info("device unregister : {}", deviceId);
+    public void unregister(String id) {
+        _MAP.remove(id);
+        logger.info("device unregister : {}", id);
     }
-
-    /**
-     * 给指定的客户端发送消息
-     * @param deviceId 客户端id
-     * @param message 消息
-     * @return
-     */
-    public boolean sendMessage(String deviceId, ServerMessage message) {
-
-        StreamObserver<ServerMessage> streamObserver = rpcClient.get(deviceId);
-        if (streamObserver == null) {
-            return false;
-        }
-        try {
-            streamObserver.onNext(message);
-            return true;
-        } catch (Exception e) {
-            rpcClient.remove(deviceId);
-            return false;
-        }
-
-    }
-
-
 
 }
