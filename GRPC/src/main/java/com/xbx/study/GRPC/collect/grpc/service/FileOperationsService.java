@@ -18,7 +18,6 @@ public class FileOperationsService extends FileOperationsGrpc.FileOperationsImpl
     private final RpcConnectionManager manager;
 
     public FileOperationsService(RpcConnectionManager rpcConnectionManager) {
-        logger.info("12313333============");
         this.manager = rpcConnectionManager;
     }
 

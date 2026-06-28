@@ -2,7 +2,10 @@ package com.xbx.study.GRPC.collect.grpc.session;
 
 
 import com.google.protobuf.Message;
+import com.xbx.study.GRPC.collect.proto.FileClientMsg;
+import com.xbx.study.GRPC.collect.proto.FileServerMsg;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public interface ClientSession<REQ extends Message,RESP extends Message> {
@@ -19,5 +22,10 @@ public interface ClientSession<REQ extends Message,RESP extends Message> {
      * 处理客户端发来的消息（由 GrpcServiceImpl 的 onNext() 调用）
      */
     void onClientMessage(REQ msg, String connectionId);
+
+
+    CompletableFuture<FileClientMsg> sendMsgAndWait(FileServerMsg msg);
+
+    void onClientMessage(FileClientMsg msg);
 
 }

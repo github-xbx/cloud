@@ -38,12 +38,8 @@ public class GrpcHealthStatusManager {
 
         for (Map.Entry<String, Object> entry : grpcBeans.entrySet()) {
             Object bean = entry.getValue();
-            if (bean instanceof BindableService service) {
-                // 获取 proto 定义的完整服务名，如 "UserService"
-                String serviceName = service.bindService().getServiceDescriptor().getName();
-                healthStatusManager.setStatus(serviceName, ServingStatus.SERVING);
-                log.info("HealthCheck 已注册: {} → SERVING", serviceName);
-            }
+
+
         }
     }
 }

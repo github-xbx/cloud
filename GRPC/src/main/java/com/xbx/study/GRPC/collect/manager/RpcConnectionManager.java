@@ -28,4 +28,11 @@ public class RpcConnectionManager {
         logger.info("device unregister : {}", id);
     }
 
+
+
+    public ClientSession<? extends Message, ? extends Message> getSession(String id) {
+        return _MAP.getOrDefault(id, null);
+    }
+
+
 }
