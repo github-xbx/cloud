@@ -6,6 +6,14 @@ option java_outer_classname = "FileOperationsProto";
 
 package collect;
 
+enum Operations {
+  LIST = 0;
+  NEW_FOLDER = 1;
+  RENAME = 2;
+  DELETE = 3;
+  ERROR = 4;
+}
+
 message FileServerMsg {
   string grpcId = 200;
 
@@ -15,12 +23,7 @@ message FileServerMsg {
 
   bool isDirectory = 100;
 
-  enum operations {
-    LIST = 0;
-    NEW_FOLDER = 1;
-    RENAME = 2;
-    DELETE = 3;
-  }
+   Operations operations = 4;
 
 }
 
@@ -34,6 +37,6 @@ message FileClientMsg {
 service FileOperations {
 
   /** 文件操作流 */
-  rpc fileOperationStream(stream FileClientMsg) returns (FileServerMsg) {}
+  rpc fileOperationStream(stream FileClientMsg) returns (stream FileServerMsg) {}
 
 }

@@ -40,7 +40,8 @@ public abstract class RpcClientSession<REQ extends Message,RESP extends Message>
 
         responseObserver.onNext(msg);
 
-        future.orTimeout(5, TimeUnit.SECONDS)
+        //等待 5秒 如果超时
+        future.orTimeout(120, TimeUnit.SECONDS)
                 .exceptionally(ex -> {
                     futureMap.remove(connectionId);
                     return null;
@@ -55,9 +56,10 @@ public abstract class RpcClientSession<REQ extends Message,RESP extends Message>
     public void onClientMessage(REQ msg, String connectionId) {
         CompletableFuture<REQ> future = futureMap.get(connectionId);
         if (future != null){
+            //如果是client 响应 server 的消息直接处理
             future.complete(msg);
         }else {
-
+            //client 旨在第一次建立连接时上送保存 连接id 设备唯一
             this.sessionId = connectionId;
         }
     }

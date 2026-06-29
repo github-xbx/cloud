@@ -17,10 +17,13 @@ public class FileOperationsClientSession extends RpcClientSession<FileClientMsg,
 
 
     public CompletableFuture<FileClientMsg> sendMsgAndWait(FileServerMsg msg) {
-        String connectionId = UUID.randomUUID().toString();
-        return sendMsgAndWait(msg, connectionId);
+        return sendMsgAndWait(msg, msg.getGrpcId());
     }
 
+    /**
+     * 处理客户端请求的消息
+     * @param msg
+     */
     public void onClientMessage(FileClientMsg msg) {
         String connectionId = msg.getGrpcId();
         this.onClientMessage(msg, connectionId);

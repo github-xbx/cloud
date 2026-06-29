@@ -1,7 +1,9 @@
 package com.xbx.study.GRPC.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xbx.study.GRPC.collect.proto.FileClientMsg;
 import com.xbx.study.GRPC.collect.service.BusinessService;
+import com.xbx.study.common.ConcurrentBiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -22,12 +24,12 @@ public class WebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketHandler.class);
 
     // 存储所有在线会话（线程安全），key 为 session.getId()
-    private static final Map<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();
+    private static final ConcurrentBiMap<String, WebSocketSession> sessionMap = new ConcurrentBiMap<>();
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    private BusinessService businessService;
+    private final BusinessService businessService;
     @Lazy
     public WebSocketHandler(BusinessService businessService ) {
         this.businessService = businessService;
@@ -71,7 +73,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
     private void handlerMessageByType(WebSocketSession session, ClientMessage message) throws Exception {
 
-
+        logger.info("handlerMessageByType, message => {}",message);
 
         switch (message.getType()) {
             case "ping":
@@ -79,6 +81,13 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 break;
             case "reg":
                 sessionMap.put(message.getText(), session);
+                break;
+            case "event":
+                String key = sessionMap.getKey(session);
+                FileClientMsg fileClientMsg = businessService.sendGrpcClient(key);
+                if (fileClientMsg != null){
+                    sendToSession(key,"{\"type\":\"message\",\"text\":\"1321321\"}");
+                }
                 break;
             default:
                 session.sendMessage(new TextMessage("{\"type\":\"message\"}"));
