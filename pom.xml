@@ -28,6 +28,8 @@
         <module>basic_lock</module>
         <module>_test</module>
         <module>GRPC</module>
+        <module>cloud_dubbo</module>
+        <module>cloud_common</module>
     </modules>
     <scm>
         <connection/>
