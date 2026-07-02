@@ -30,6 +30,16 @@
         <module>GRPC</module>
         <module>cloud_dubbo</module>
         <module>cloud_common</module>
+        <module>cloud_dubbo_0</module>
+
+
+
+
+
+        <module>device</module>
+
+
+
     </modules>
     <scm>
         <connection/>
