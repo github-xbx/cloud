@@ -4,17 +4,38 @@ import com.xbx.study.device.network.core.DeviceNetworkProvider;
 import com.xbx.study.device.network.core.NetworkHandler;
 import com.xbx.study.device.network.core.NetworkServer;
 import com.xbx.study.device.network.core.enums.NetworkProtocol;
+import com.xbx.study.device.network.core.message.BaseMessage;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TcpNetworkProvider implements DeviceNetworkProvider {
+public class TcpNetworkProvider implements DeviceNetworkProvider, DisposableBean {
+
+    @Value("${tcp.server.port:8081}")
+    private int port;
+
+    private NetworkServer server;
+
     @Override
     public NetworkProtocol protocol() {
         return NetworkProtocol.TCP;
     }
 
     @Override
-    public NetworkServer create(NetworkHandler<?> handler) {
-        return new TcpNetworkServer(8081,handler);
+    public NetworkServer create(NetworkHandler<BaseMessage> handler) {
+        server = new TcpNetworkServer(port, handler);
+        return server;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        if (server != null){
+            try {
+                server.stop();
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

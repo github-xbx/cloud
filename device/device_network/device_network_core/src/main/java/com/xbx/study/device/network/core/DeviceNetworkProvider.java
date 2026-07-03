@@ -1,6 +1,7 @@
 package com.xbx.study.device.network.core;
 
 import com.xbx.study.device.network.core.enums.NetworkProtocol;
+import com.xbx.study.device.network.core.message.BaseMessage;
 
 /**
  * 设备网络服务提供者接口
@@ -19,6 +20,6 @@ public interface DeviceNetworkProvider {
      * @param handler
      * @return
      */
-    NetworkServer create(NetworkHandler<?> handler);
+    NetworkServer create(NetworkHandler<BaseMessage> handler);
 
 }
