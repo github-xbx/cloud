@@ -28,6 +28,18 @@
         <module>basic_lock</module>
         <module>_test</module>
         <module>GRPC</module>
+        <module>cloud_dubbo_1</module>
+        <module>cloud_common</module>
+        <module>cloud_dubbo_0</module>
+
+
+
+
+
+        <module>device</module>
+
+
+
     </modules>
     <scm>
         <connection/>
@@ -135,13 +147,19 @@
 
 
 
-    <!--<build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>-->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.13.0</version>
+                    <configuration>
+                        <release>21</release>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>

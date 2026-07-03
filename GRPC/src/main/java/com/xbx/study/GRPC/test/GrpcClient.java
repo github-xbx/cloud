@@ -24,9 +24,9 @@ public class GrpcClient {
                 .intercept(new TestInterceptor.HeaderClientInterceptor()) //拦截器全局注册
                 .build();
 
-
-        blockingStub = GreeterGrpc.newBlockingStub(channel);
-        asyncStub = GreeterGrpc.newStub(channel);             // 创建异步桩
+        // withDeadlineAfter() 执行调用，如果 5 秒内未返回，会抛出 StatusRuntimeException (状态码 DEADLINE_EXCEEDED)
+        blockingStub = GreeterGrpc.newBlockingStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);
+        asyncStub = GreeterGrpc.newStub(channel).withDeadlineAfter(5, TimeUnit.SECONDS);             // 创建异步桩
     }
 
 

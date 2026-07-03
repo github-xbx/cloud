@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.xbx.study.GRPC.collect.proto";
+option java_outer_classname = "PingPongProto";
+
+import "collect/common/common_message.proto";
+package collect;
+
+
+message Ping{
+  string deviceId = 1;
+  int32 terminal = 2;
+}
+
+message Pong {
+
+}
+
+service PingPong{
+  rpc connect(Ping) returns(collect.common.ServerMessage) {}
+}

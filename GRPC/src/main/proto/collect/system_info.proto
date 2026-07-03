@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.xbx.study.GRPC.collect.proto";
+option java_outer_classname = "SystemInfoProto";
+
+package collect;
+
+
+message SystemServerMsg{
+
+
+  enum type{
+    SYSTEM_INFO = 0;  //系统信息
+    SCREENSHOT = 1;   //截屏
+    TERMINAL_INFO = 2;  //终端信息
+  }
+
+}
+
+message SystemClientMsg{
+
+  bytes screenshotData = 1;
+  string content = 2;
+
+}
+
+
+service SystemInfo {
+
+  rpc systemInfoStream(SystemServerMsg) returns (SystemClientMsg) {}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
