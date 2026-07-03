@@ -1,6 +1,7 @@
 package com.xbx.study.device.gateway.handler;
 
 import com.xbx.study.device.network.core.NetworkHandler;
+import com.xbx.study.device.network.core.message.BaseMessage;
 import com.xbx.study.device.network.tcp.TcpSessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,7 @@ import java.util.regex.Pattern;
  * - 数据上报: {"type":"data","deviceId":"xxx","payload":{...}}
  * - 命令响应: {"type":"response","deviceId":"xxx","commandId":"xxx","result":{...}}
  */
-public class TcpNettyNetworkHandler implements NetworkHandler<String> {
+public class TcpNettyNetworkHandler implements NetworkHandler<BaseMessage> {
 
     private static final Logger log = LoggerFactory.getLogger(TcpNettyNetworkHandler.class);
 
@@ -39,44 +40,44 @@ public class TcpNettyNetworkHandler implements NetworkHandler<String> {
      */
 
     @Override
-    public void onMessage(String message) {
+    public void onMessage(BaseMessage message) {
         // 单参数版本，不使用
         log.warn("调用了单参数 onMessage，建议使用带 sessionId 的版本");
     }
 
     @Override
-    public void onMessage(String sessionId, String message) {
-        log.info("收到业务消息: sessionId={}, message={}", sessionId, message);
-
-        try {
-            // 解析消息类型
-            String messageType = extractField(message, TYPE_PATTERN);
-            String deviceId = extractField(message, DEVICE_ID_PATTERN);
-
-            if (messageType == null) {
-                log.warn("消息格式错误：缺少type字段, message={}", message);
-                return;
-            }
-
-            switch (messageType) {
-                case "register":
-                    handleDeviceRegister(sessionId, message, deviceId);
-                    break;
-                case "heartbeat":
-                    handleHeartbeat(sessionId, message, deviceId);
-                    break;
-                case "data":
-                    handleDataReport(sessionId, message, deviceId);
-                    break;
-                case "response":
-                    handleCommandResponse(sessionId, message, deviceId);
-                    break;
-                default:
-                    log.warn("未知的消息类型: {}", messageType);
-            }
-        } catch (Exception e) {
-            log.error("处理消息失败: {}", message, e);
-        }
+    public void onMessage(String sessionId, BaseMessage message) {
+//        log.info("收到业务消息: sessionId={}, message={}", sessionId, message);
+//
+//        try {
+//            // 解析消息类型
+//            String messageType = extractField(message, TYPE_PATTERN);
+//            String deviceId = extractField(message, DEVICE_ID_PATTERN);
+//
+//            if (messageType == null) {
+//                log.warn("消息格式错误：缺少type字段, message={}", message);
+//                return;
+//            }
+//
+//            switch (messageType) {
+//                case "register":
+//                    handleDeviceRegister(sessionId, message, deviceId);
+//                    break;
+//                case "heartbeat":
+//                    handleHeartbeat(sessionId, message, deviceId);
+//                    break;
+//                case "data":
+//                    handleDataReport(sessionId, message, deviceId);
+//                    break;
+//                case "response":
+//                    handleCommandResponse(sessionId, message, deviceId);
+//                    break;
+//                default:
+//                    log.warn("未知的消息类型: {}", messageType);
+//            }
+//        } catch (Exception e) {
+//            log.error("处理消息失败: {}", message, e);
+//        }
     }
 
     /**

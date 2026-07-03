@@ -6,6 +6,7 @@ public enum NetworkProtocol {
     MQTT,
     TCP,
     MODBUS_TCP,
+    GRPC,
 
 
 

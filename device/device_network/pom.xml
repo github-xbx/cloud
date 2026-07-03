@@ -19,6 +19,7 @@
     <modules>
         <module>device_network_core</module>
         <module>device_network_tcp</module>
+        <module>device_network_grpc</module>
     </modules>
 
     <build>
