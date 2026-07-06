@@ -4,7 +4,7 @@ import com.xbx.study.device.network.core.DeviceNetworkProvider;
 import com.xbx.study.device.network.core.NetworkHandler;
 import com.xbx.study.device.network.core.NetworkServer;
 import com.xbx.study.device.network.core.enums.NetworkProtocol;
-import com.xbx.study.device.network.core.message.BaseMessage;
+import com.xbx.study.device.network.tcp.handler.TcpNettyNetworkHandler;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,8 +23,13 @@ public class TcpNetworkProvider implements DeviceNetworkProvider, DisposableBean
     }
 
     @Override
-    public NetworkServer create(NetworkHandler<BaseMessage> handler) {
-        server = new TcpNetworkServer(port, handler);
+    public NetworkServer create(NetworkHandler handler) {
+
+        if (!(handler instanceof TcpNettyNetworkHandler tcpHandler)){
+            throw new RuntimeException();
+        }
+
+        server = new TcpNetworkServer(port, tcpHandler);
         return server;
     }
 

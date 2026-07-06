@@ -16,10 +16,10 @@ public class TcpNettyChannelHandler extends SimpleChannelInboundHandler<BaseMess
 
     private static final Logger log = LoggerFactory.getLogger(TcpNettyChannelHandler.class);
 
-    private final NetworkHandler<BaseMessage> networkHandler;
+    private final NetworkHandler networkHandler;
     private final TcpSessionManager sessionManager = TcpSessionManager.getInstance();
 
-    public TcpNettyChannelHandler(NetworkHandler<BaseMessage> networkHandler) {
+    public TcpNettyChannelHandler(NetworkHandler networkHandler) {
         this.networkHandler = networkHandler;
 
     }

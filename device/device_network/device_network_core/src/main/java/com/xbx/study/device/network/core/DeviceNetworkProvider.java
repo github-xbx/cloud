@@ -15,11 +15,17 @@ public interface DeviceNetworkProvider {
      */
     NetworkProtocol protocol();
 
+
+    default boolean supports(NetworkProtocol protocol){
+        return protocol == protocol();
+    }
+
+
     /**
      * 创建网络服务
      * @param handler
      * @return
      */
-    NetworkServer create(NetworkHandler<BaseMessage> handler);
+    NetworkServer create(NetworkHandler handler);
 
 }

@@ -19,9 +19,9 @@ import java.util.regex.Pattern;
  * - 数据上报: {"type":"data","deviceId":"xxx","payload":{...}}
  * - 命令响应: {"type":"response","deviceId":"xxx","commandId":"xxx","result":{...}}
  */
-public class TcpNettyNetworkHandler implements NetworkHandler<BaseMessage> {
+public class TcpNetworkHandler implements NetworkHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(TcpNettyNetworkHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(TcpNetworkHandler.class);
 
     /**
      * 简单的消息类型解析正则（生产环境建议使用 JSON 解析库）
@@ -32,7 +32,7 @@ public class TcpNettyNetworkHandler implements NetworkHandler<BaseMessage> {
 
     private TcpSessionManager sessionManager = TcpSessionManager.getInstance();
 
-    public TcpNettyNetworkHandler() {
+    public TcpNetworkHandler() {
     }
 
     /**
