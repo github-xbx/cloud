@@ -4,23 +4,15 @@ server:
 dubbo:
   application:
     name: cloud_dubbo_0
-  #注册中心
+  #注册中心 注册中心置为 N/A，表示不注册
   registry:
-    address: nacos://127.0.0.1:8848
-    username: nacos
-    password: nacos
-    parameters:
-      #nacos指定的命名空间
-      namespace: 295761fe-9512-4b57-b669-68321157e4af
-      group: cloud_dubbo_test
-  config-center:
-    address: nacos://127.0.0.1:8848
-    username: nacos
-    password: nacos
-    namespace: 295761fe-9512-4b57-b669-68321157e4af
-    group: cloud_dubbo_test
-    config-file: dubbo.yaml #全局的配置 Data ID
-    app-config-file: cloud_dubbo_0.yaml #应用特有的配置 Data ID
+    address: N/A
+  # 协议配置：使用 triple 协议监听 20880 端口
+  protocol:
+    port: 20880
+    name: tri
+  scan:
+    base-packages:  com.xbx.study.dubbo.service
 
 logging:
   level:
