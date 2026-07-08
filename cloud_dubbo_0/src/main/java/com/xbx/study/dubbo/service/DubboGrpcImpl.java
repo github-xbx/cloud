@@ -1,25 +1,28 @@
 package com.xbx.study.dubbo.service;
 
-import com.xbx.study.dubbo.common.grpc.DubboGrpcServiceGrpc;
+
+import com.xbx.study.dubbo.common.grpc.DubboDubboGrpcServiceTriple.DubboGrpcServiceImplBase;
 import com.xbx.study.dubbo.common.grpc.GrpcReq;
 import com.xbx.study.dubbo.common.grpc.GrpcResp;
-import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.config.annotation.DubboService;
 
 /**
- * dubbo 实现 gRPC 协议接口
+ * Dubbo Triple 服务端实现
+ *
+ * 继承 DubboGrpcServiceImplBase（不是直接实现 DubboGrpcService 接口），
+ * 基类已提供 helloAsync 等异步方法的默认实现，只需重写同步的 hello() 即可。
  */
-@DubboService(protocol = "tri") //指定triple协议，tri协议兼容gRPC协议
-public class DubboGrpcImpl extends DubboGrpcServiceGrpc.DubboGrpcServiceImplBase {
+@DubboService(protocol = "tri")
+public class DubboGrpcImpl extends DubboGrpcServiceImplBase {
+
 
     @Override
-    public void hello(GrpcReq request, StreamObserver<GrpcResp> responseObserver) {
-
-
+    public GrpcResp hello(GrpcReq request) {
         System.out.println("GrpcReq => " + request.toString());
-
-        responseObserver.onNext(GrpcResp.newBuilder().setResp("dubbo grpc server response").build());
-        responseObserver.onCompleted();
-
+        return GrpcResp.newBuilder()
+                .setResp("dubbo grpc server response")
+                .build();
     }
+
+
 }

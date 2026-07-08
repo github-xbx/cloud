@@ -23,6 +23,10 @@ public class DubboController {
     }
 
 
+    @GetMapping("grpc")
+    public String grpc(){
+        return dubboDemoClient.dubboGrpc();
+    }
 
 
 }
