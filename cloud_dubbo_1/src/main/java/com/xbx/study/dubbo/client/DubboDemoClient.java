@@ -11,11 +11,11 @@ import org.springframework.stereotype.Component;
 public class DubboDemoClient {
 
 
-    @DubboReference(protocol = "tri", url = "tri://localhost:20880")
+    @DubboReference(protocol = "dubbo", url = "dubbo://localhost:20880")
     private DubboDemoService dubboDemoService;
 
 
-    @DubboReference(protocol = "tri", url = "tri://localhost:20880")
+    @DubboReference(protocol = "tri", url = "tri://localhost:20880", mock = "")
     private DubboGrpcService  dubboGrpcService;
 
 
