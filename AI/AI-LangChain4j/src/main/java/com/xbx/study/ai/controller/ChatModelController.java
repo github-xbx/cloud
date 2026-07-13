@@ -1,11 +1,15 @@
 package com.xbx.study.ai.controller;
 
 import com.xbx.study.ai.service.ChatAssistant;
+import dev.langchain4j.community.model.dashscope.WanxImageModel;
+import dev.langchain4j.data.image.Image;
 import dev.langchain4j.data.message.ImageContent;
 import dev.langchain4j.data.message.TextContent;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.response.ChatResponse;
+import dev.langchain4j.model.image.ImageModel;
+import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
 
 
@@ -86,6 +90,23 @@ public class ChatModelController {
         String text = chat.aiMessage().text();
         logger.info("deepseek images result => {}",text);
         return text;
+    }
+
+
+
+    @Resource(name = "qwenImageModel")
+    private ImageModel qwenImageModel;
+
+    @GetMapping("qwen_image_create")
+    public String qwenCallIImageCreate() throws IOException {
+
+        Response<Image> response = qwenImageModel.generate("美女");
+
+
+        logger.info("qwenImageModel result => {}",response.content().url());
+
+        return response.content().url().toString();
+
     }
 
 

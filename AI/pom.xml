@@ -19,6 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <langchain.version>1.16.3</langchain.version>
+        <langchain.community.version>1.16.0-beta26</langchain.community.version>
         <langchain.springboot.version>1.16.3-beta26</langchain.springboot.version>
     </properties>
 
@@ -41,6 +42,13 @@
                 <groupId>dev.langchain4j</groupId>
                 <artifactId>langchain4j-bom</artifactId>
                 <version>${langchain.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>dev.langchain4j</groupId>
+                <artifactId>langchain4j-community-bom</artifactId>
+                <version>${langchain.community.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

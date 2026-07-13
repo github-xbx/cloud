@@ -1,9 +1,13 @@
 package com.xbx.study.ai.config;
 
 import com.xbx.study.ai.listener.DeepseekChatModelListener;
-import dev.langchain4j.http.client.spring.restclient.SpringRestClientBuilder;
+import dev.langchain4j.community.model.dashscope.WanxImageModel;
+//import dev.langchain4j.http.client.spring.restclient.SpringRestClientBuilder;
+import dev.langchain4j.community.model.dashscope.WanxImageStyle;
 import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.openai.OpenAiImageModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,11 +28,11 @@ public class LLMConfiguration {
                 .baseUrl("https://api.deepseek.com")
                 .apiKey(System.getenv("java_deepseek_apikey"))
                 .modelName("deepseek-v4-pro")
-                .httpClientBuilder(new SpringRestClientBuilder())
+                //.httpClientBuilder(new SpringRestClientBuilder())
                 .logRequests(true)  //日志级别设置为debug才有效
                 .listeners(List.of(new DeepseekChatModelListener())) //配置监听器,可以配置多个
                 .maxRetries(3) //设置重试次数
-                .timeout(Duration.ofSeconds(10)) //设置超时时间 向大模型发送请求时，如果 指定时间内没有收到响应，该请求将被中断并报错 request time out
+                //.timeout(Duration.ofSeconds(10)) //设置超时时间 向大模型发送请求时，如果 指定时间内没有收到响应，该请求将被中断并报错 request time out
                 .build();
     }
 
@@ -39,7 +43,18 @@ public class LLMConfiguration {
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
                 .apiKey(System.getenv("java_qwen_apikey"))
                 .modelName("qwen3.5-omni-plus-2026-03-15")
-                .httpClientBuilder(new SpringRestClientBuilder())
+                //.httpClientBuilder(new SpringRestClientBuilder())
+                .build();
+    }
+
+    @Bean(name = "qwenImageModel")
+    public WanxImageModel imageModel(){
+        return WanxImageModel.builder()
+                .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/api/v1" )
+                .apiKey(System.getenv("java_qwen_apikey"))
+                .modelName("qwen-image-2.0-pro-2026-06-22")
+                //.logRequests(true)
+                .style(WanxImageStyle.CARTOON_3D)
                 .build();
     }
 
