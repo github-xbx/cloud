@@ -1,0 +1,22 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: LangChain4J_0
+
+langchain4j:
+  http:
+    clientBuilderFactory: dev.langchain4j.http.client.spring.restclient.SpringRestClientBuilderFactory
+#  open-ai:
+#    chat-model:
+#      api-key: ${java_deepseek_apikey}
+#      model-name: deepseek-v4-flash
+#      base-url: https://api.deepseek.com
+
+
+# 只有日志级别调整为debug级别，同时配置以上 langchain 日志输出开关才有效
+logging:
+  level:
+    dev:
+      langchain4j: DEBUG

@@ -34,10 +34,11 @@
 
 
 
-
+        <module>cloud_admin</module>
 
         <module>device</module>
         <module>JDBC</module>
+        <module>AI</module>
 
 
     </modules>
