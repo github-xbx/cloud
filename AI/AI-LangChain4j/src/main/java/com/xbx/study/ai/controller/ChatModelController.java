@@ -1,13 +1,25 @@
 package com.xbx.study.ai.controller;
 
+import ch.qos.logback.classic.spi.EventArgUtil;
+import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesis;
+import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisParam;
+import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisResult;
+import com.alibaba.dashscope.exception.NoApiKeyException;
+import com.xbx.study.ai.po.prompt.LawPrompt;
 import com.xbx.study.ai.service.ChatAssistant;
+import com.xbx.study.ai.service.ChatMemoryAssistant;
+import com.xbx.study.ai.service.LawAssistant;
+import com.xbx.study.ai.service.StreamingChatAssistant;
 import dev.langchain4j.community.model.dashscope.WanxImageModel;
+import dev.langchain4j.community.model.dashscope.WanxImageStyle;
 import dev.langchain4j.data.image.Image;
 import dev.langchain4j.data.message.ImageContent;
 import dev.langchain4j.data.message.TextContent;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.chat.response.ChatResponse;
+import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
 import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
@@ -16,13 +28,19 @@ import dev.langchain4j.model.output.TokenUsage;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
 @RestController
@@ -34,11 +52,42 @@ public class ChatModelController {
     @Resource(name = "deepseek")
     public ChatModel deepseek;
 
+    @Value("classpath:static/images/mi.jpg")
+    private org.springframework.core.io.Resource resource;//import org.springframework.core.io.Resource;
 
-    public final ChatAssistant chatAssistant;
+    @Resource(name = "qwen")
+    private ChatModel qwen;
 
-    public ChatModelController(ChatAssistant chatAssistant) {
+    @Resource(name = "qwenImageModel")
+    private ImageModel qwenImageModel;
+
+    @Autowired
+    @Qualifier("chatMemoryMessageWindows")
+    private ChatMemoryAssistant chatMemoryMessageWindows;
+
+    @Autowired
+    @Qualifier("chatMemoryTokenWindows")
+    private ChatMemoryAssistant chatMemoryTokenWindows;
+
+    @Resource(name = "lawAssistant")
+    private LawAssistant lawAssistant;
+
+
+
+
+
+
+    private final StreamingChatModel streamingChatModel;
+    private final ChatAssistant chatAssistant;
+    private final StreamingChatAssistant streamingChatAssistant;
+
+    public ChatModelController(
+            @Qualifier("qwen1") StreamingChatModel streamingChatModel,
+            ChatAssistant chatAssistant,
+            StreamingChatAssistant streamingChatAssistant) {
+        this.streamingChatModel = streamingChatModel;
         this.chatAssistant = chatAssistant;
+        this.streamingChatAssistant = streamingChatAssistant;
     }
 
 
@@ -67,11 +116,6 @@ public class ChatModelController {
 
     }
 
-    @Value("classpath:static/images/mi.jpg")
-    private org.springframework.core.io.Resource resource;//import org.springframework.core.io.Resource;
-
-    @Resource(name = "qwen")
-    private ChatModel qwen;
 
 
     @GetMapping("qwen_image")
@@ -93,10 +137,6 @@ public class ChatModelController {
     }
 
 
-
-    @Resource(name = "qwenImageModel")
-    private ImageModel qwenImageModel;
-
     @GetMapping("qwen_image_create")
     public String qwenCallIImageCreate() throws IOException {
 
@@ -108,6 +148,186 @@ public class ChatModelController {
         return response.content().url().toString();
 
     }
+    @GetMapping("qwen_image_create_1")
+    public String qwenCallIImageCreate1() {
+        String prompt = "近景镜头，18岁的中国女孩，古代服饰，圆脸，正面看着镜头"
+                + "民族优雅的服饰，商业摄影，室外，电影级光照，半身特写，精致的淡妆，锐利的边缘。";
+        ImageSynthesisParam param = ImageSynthesisParam.builder()
+                .apiKey(System.getenv("java_qwen_apikey"))
+                .model("wanx2.0-t2i-turbo")
+                .prompt(prompt)
+                .style(WanxImageStyle.CARTOON_3D.getStyle())
+                .n(2)
+                //.size("1920*1080")
+                .build();
+        ImageSynthesis imageSynthesis = new ImageSynthesis();
+        ImageSynthesisResult result = null;
 
+        try {
+            System.out.println("--- sync call, please wait a moment ---");
+            result = imageSynthesis.call(param);
+        } catch (NoApiKeyException e) {
+            throw new RuntimeException(e);
+        }
+        return  result.toString();
+    }
+
+
+
+    @GetMapping("stream/chat0")
+    public Flux<String> streamChat0(@RequestParam("prompt") String prompt){
+        return Flux.create(stringFluxSink -> {
+            streamingChatModel.chat(prompt, new StreamingChatResponseHandler() {
+
+                @Override
+                public void onPartialResponse(String s) {
+                    stringFluxSink.next(s);
+                }
+
+                @Override
+                public void onCompleteResponse(ChatResponse chatResponse) {
+                    stringFluxSink.complete();
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    stringFluxSink.error(throwable);
+                }
+            });
+        });
+    }
+
+
+
+    @GetMapping("stream/chat1")
+    public void streamChat1(@RequestParam(value = "prompt", defaultValue = "北京有什么好吃的") String prompt){
+        logger.info("----- come in chat2 -----");
+        streamingChatModel.chat(prompt, new StreamingChatResponseHandler() {
+
+            @Override
+            public void onPartialResponse(String partialResponse) {
+                logger.info("=== [{}] ===",partialResponse);
+            }
+
+            @Override
+            public void onCompleteResponse(ChatResponse chatResponse) {
+                logger.info("-------- response over: {}", chatResponse);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        });
+
+    }
+
+    @GetMapping("stream/chat2")
+    public Flux<String> streamChat2(@RequestParam(value = "prompt", defaultValue = "南京有什么好吃的") String prompt){
+        logger.info("----- come in chat3 -----");
+
+        return streamingChatAssistant.chatFlux(prompt);
+    }
+
+
+    /**
+     * 没有缓存记忆功能
+     * @return
+     */
+    @GetMapping("memory/chat0")
+    public String chat0(){
+        String chat1 = chatAssistant.chat("你好，我的名字交张三");
+        logger.info("chat1 => {}",chat1);
+
+        String chat2 = chatAssistant.chat("我的名字叫什么");
+        logger.info("chat2 => {}",chat2);
+        return "success : "+ LocalDateTime.now() +"<br> \n\n answer01: "+chat1+"<br> \n\n answer02: "+chat2;
+    }
+
+    /**
+     * 以消息缓存的聊天
+     * @return
+     */
+    @GetMapping("memory/chat1")
+    public String chat1(){
+
+        String chat1 = chatMemoryMessageWindows.chatWithChatMemory(1L, "你好，我的名字是李四");
+        logger.info("userid = 1L, chat1 => {}",chat1);
+        String chat2 = chatMemoryMessageWindows.chatWithChatMemory(1L, "我的名字是什么");
+        logger.info("userid = 1L, chat2 => {}",chat2);
+
+        String chat3 = chatMemoryMessageWindows.chatWithChatMemory(3L, "你好，我的名字是hahaha");
+        logger.info("userid = 3L, chat1 => {}",chat3);
+        String chat4 = chatMemoryMessageWindows.chatWithChatMemory(3L, "我的名字是什么");
+        logger.info("userid = 3L, chat2 => {}",chat4);
+
+        return "chatMessageWindowChatMemory success : "
+                + LocalDateTime.now()+"<br> \n\n " +
+                "userId=1L,chat1: "+chat1+"<br> \n\n userId=1L,chat2: "+chat2+"<br> \n\n" +
+                "userId=3L,chat3: "+chat3+"<br> \n\n userId=3L,chat4: "+chat4+"<br> \\n\\n";
+    }
+
+
+    /**
+     * 以 token缓存的 聊天
+     * @return
+     */
+    @GetMapping("memory/chat2")
+    public String chat2(){
+
+        String chat1 = chatMemoryTokenWindows.chatWithChatMemory(1L, "你好，我的名字是java");
+        logger.info("userid = 1L, chat1 => {}",chat1);
+        String chat2 = chatMemoryTokenWindows.chatWithChatMemory(1L, "我的名字是什么");
+        logger.info("userid = 1L, chat2 => {}",chat2);
+
+        String chat3 = chatMemoryTokenWindows.chatWithChatMemory(3L, "你好，我的名字是spring boot");
+        logger.info("userid = 3L, chat1 => {}",chat3);
+        String chat4 = chatMemoryTokenWindows.chatWithChatMemory(3L, "我的名字是什么");
+        logger.info("userid = 3L, chat2 => {}",chat4);
+
+        return "chatTokenWindowChatMemory success : "
+                + LocalDateTime.now()+"<br> \n\n " +
+                "userId=1L,chat1: "+chat1+"<br> \n\n userId=1L,chat2: "+chat2+"<br> \n\n" +
+                "userId=3L,chat3: "+chat3+"<br> \n\n userId=3L,chat4: "+chat4+"<br> \\n\\n";
+    }
+
+
+    @GetMapping(value = "/chatprompt/test1")
+    public String test1() {
+        String chat = lawAssistant.chat(1L,"什么是知识产权？",2000);
+        System.out.println(chat);
+
+        String chat2 = lawAssistant.chat(1L,"什么是java？",2000);
+        System.out.println(chat2);
+
+        String chat3 = lawAssistant.chat(1L,"介绍下西瓜和芒果",2000);
+        System.out.println(chat3);
+
+        String chat4 = lawAssistant.chat(1L,"飞机发动机原理",2000);
+        System.out.println(chat4);
+
+        return "success : "+ LocalDateTime.now()+"<br> \n\n chat: "+chat+"<br> \n\n chat2: "+chat2;
+    }
+
+
+    /**
+     * TRIPS协议（与贸易有关的知识产权协议）：
+     * 这是世界贸易组织（WTO）成员间的一个重要协议，
+     * 它规定了最低标准的知识产权保护要求，并适用于所有WTO成员。
+     * @return
+     */
+    @GetMapping(value = "/chatprompt/test2")
+    public String test2() {
+        LawPrompt prompt = new LawPrompt();
+
+        prompt.setLegal("知识产权");
+        prompt.setQuestion("TRIPS协议?");
+
+        String chat = lawAssistant.chat(prompt);
+
+        System.out.println(chat);
+
+        return "success : "+ LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)+"<br> \n\n chat: "+chat;
+    }
 
 }

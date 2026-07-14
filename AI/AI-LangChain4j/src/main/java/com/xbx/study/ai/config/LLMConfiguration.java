@@ -1,17 +1,22 @@
 package com.xbx.study.ai.config;
 
 import com.xbx.study.ai.listener.DeepseekChatModelListener;
+import com.xbx.study.ai.service.ChatMemoryAssistant;
+import com.xbx.study.ai.service.LawAssistant;
+import com.xbx.study.ai.service.StreamingChatAssistant;
 import dev.langchain4j.community.model.dashscope.WanxImageModel;
-//import dev.langchain4j.http.client.spring.restclient.SpringRestClientBuilder;
-import dev.langchain4j.community.model.dashscope.WanxImageStyle;
+import dev.langchain4j.memory.chat.MessageWindowChatMemory;
+import dev.langchain4j.memory.chat.TokenWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
-import dev.langchain4j.model.image.ImageModel;
+import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
-import dev.langchain4j.model.openai.OpenAiImageModel;
+import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
+import dev.langchain4j.model.openai.OpenAiTokenCountEstimator;
+import dev.langchain4j.service.AiServices;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.time.Duration;
 import java.util.List;
 
 @Configuration
@@ -46,16 +51,92 @@ public class LLMConfiguration {
                 //.httpClientBuilder(new SpringRestClientBuilder())
                 .build();
     }
+    @Bean(name = "qwen1")
+    public StreamingChatModel qwen1(){
+        return OpenAiStreamingChatModel.builder()
+                .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
+                .apiKey(System.getenv("java_qwen_apikey"))
+                .modelName("qwen3-vl-235b-a22b-thinking")
+                .logRequests(true)
+                .logResponses(true)
+                .build();
+    }
+
 
     @Bean(name = "qwenImageModel")
     public WanxImageModel imageModel(){
         return WanxImageModel.builder()
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/api/v1" )
                 .apiKey(System.getenv("java_qwen_apikey"))
-                .modelName("qwen-image-2.0-pro-2026-06-22")
+                //.modelName("qwen-image-2.0-pro-2026-06-22")
+                .modelName("wanx2.0-t2i-turbo")
                 //.logRequests(true)
-                .style(WanxImageStyle.CARTOON_3D)
+
                 .build();
     }
+
+
+    /**
+     * 不使用 @AiService 注解方式定义 ai service bean
+     * @param streamingChatModel
+     * @return
+     */
+    @Bean
+    public StreamingChatAssistant streamingChatAssistant(@Qualifier("qwen1") StreamingChatModel streamingChatModel){
+        return AiServices.create(StreamingChatAssistant.class, streamingChatModel);
+    }
+
+
+    /**
+     * 基于消息缓存的 chatAssistant
+     * @param chatModel
+     * @return
+     */
+    @Bean(name = "chatMemoryMessageWindows")
+    public ChatMemoryAssistant chatMemoryMessageWindows(@Qualifier("qwen") ChatModel chatModel){
+        return AiServices.builder(ChatMemoryAssistant.class)
+                .chatModel(chatModel)
+                // 注意每个memoryId 对应创建一个ChatMemory
+                .chatMemoryProvider(memoryId -> {
+                   return MessageWindowChatMemory.withMaxMessages(100); //最大消息数 100
+                })
+                .build();
+    }
+
+    /**
+     * 基于token缓存的 chatAssistant
+     * @param chatModel
+     * @return
+     */
+    @Bean(name = "chatMemoryTokenWindows")
+    public ChatMemoryAssistant chatMemoryTokenWindows(@Qualifier("qwen") ChatModel chatModel){
+        // TokenCountEstimator 默认的token 分词器，需要杰克 Tokenizer 计算 ChatMessage的token数量
+        OpenAiTokenCountEstimator openAiTokenizer = new OpenAiTokenCountEstimator("gpt-4.");
+        return AiServices.builder(ChatMemoryAssistant.class)
+                .chatModel(chatModel)
+                .chatMemoryProvider(memoryId -> {
+                    return TokenWindowChatMemory.withMaxTokens(1000, openAiTokenizer); //最大1000个token
+                })
+                .build();
+    }
+
+
+    /**
+     * 存在提示词的 chatModel
+     * @param chatModel
+     * @return
+     */
+    @Bean(name = "lawAssistant")
+    public LawAssistant lawAssistant(@Qualifier("qwen") ChatModel chatModel){
+        // TokenCountEstimator 默认的token 分词器，需要杰克 Tokenizer 计算 ChatMessage的token数量
+        OpenAiTokenCountEstimator openAiTokenizer = new OpenAiTokenCountEstimator("gpt-4.");
+        return AiServices.builder(LawAssistant.class)
+                .chatModel(chatModel)
+                .chatMemoryProvider(memoryId -> {
+                    return TokenWindowChatMemory.withMaxTokens(1000, openAiTokenizer); //最大1000个token
+                })
+                .build();
+    }
+
 
 }

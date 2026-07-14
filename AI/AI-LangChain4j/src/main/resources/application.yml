@@ -1,5 +1,11 @@
 server:
   port: 9000
+  servlet:
+    # 设置响应的字符编码，避免流式返回输出乱码
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 spring:
   application:
@@ -20,3 +26,4 @@ logging:
   level:
     dev:
       langchain4j: DEBUG
+
