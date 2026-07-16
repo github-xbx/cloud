@@ -9,15 +9,18 @@ import com.xbx.study.ai.po.prompt.LawPrompt;
 import com.xbx.study.ai.service.*;
 import dev.langchain4j.community.model.dashscope.WanxImageModel;
 import dev.langchain4j.community.model.dashscope.WanxImageStyle;
+import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.image.Image;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.ImageContent;
 import dev.langchain4j.data.message.TextContent;
 import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
+import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.input.Prompt;
 import dev.langchain4j.model.input.PromptTemplate;
@@ -25,7 +28,13 @@ import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
 
 
+import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
+import dev.langchain4j.store.embedding.EmbeddingSearchResult;
+import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.store.embedding.filter.MetadataFilterBuilder;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
+import io.qdrant.client.QdrantClient;
+import io.qdrant.client.grpc.Collections;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +98,17 @@ public class ChatModelController {
 
     @Resource(name = "functionHighAssistant")
     private FunctionHighAssistant functionHighAssistant;
+
+
+
+    @Resource
+    private EmbeddingModel embeddingModel;
+    @Resource
+    private QdrantClient qdrantClient;
+    @Resource
+    private EmbeddingStore<TextSegment> embeddingStore;
+
+
 
 
 
@@ -411,4 +431,100 @@ public class ChatModelController {
         logger.info("chat => {}",chat);
         return chat;
     }
+
+
+    /**
+     * 文本向量化测试，看看形成向量后的文本
+     * @return
+     */
+    @GetMapping("embedding/embed")
+    public String embed(){
+        String prompt = """
+                咏鸡
+                鸡鸣破晓光，
+                红冠映朝阳。
+                金羽披霞彩，
+                昂首步高岗
+                """;
+
+        Response<Embedding> embed = embeddingModel.embed(prompt);
+        logger.info("embed => {}",embed);
+        return  embed.content().toString();
+    }
+
+
+    /**
+     * 新建向量数据库实例和创建索引：test-qdrant
+     * 类似mysql create database test-qdrant
+     *
+     */
+    @GetMapping("embedding/createCollection")
+    public void createCollection(){
+
+        var vectorParams = Collections.VectorParams.newBuilder()
+                .setDistance(Collections.Distance.Cosine)
+                .setSize(1024)
+                .build();
+        qdrantClient.createCollectionAsync("test-qdrant", vectorParams);
+
+    }
+
+    /**
+     * 往向量数据库新增文本数据记录
+     * @return
+     */
+    @GetMapping("embedding/add")
+    public String  add(){
+        String prompt = """
+                咏鸡
+                鸡鸣破晓光，
+                红冠映朝阳。
+                金羽披霞彩，
+                昂首步高岗
+                """;
+        TextSegment textSegment = TextSegment.from(prompt);
+        textSegment.metadata().put("author","xbx");
+
+        Response<Embedding> chat = embeddingModel.embed(prompt);
+        Embedding embedding = chat.content();
+
+        String add = embeddingStore.add(embedding, textSegment);
+
+        logger.info("embedding store result => {}",add);
+
+        return add;
+    }
+
+
+    @GetMapping("embedding/query0")
+    public String query0(){
+        Response<Embedding> embed = embeddingModel.embed("永鸡说的是什么");
+        Embedding embedding = embed.content();
+        logger.info("向量大模型查询 => {}",embedding);
+        EmbeddingSearchRequest embeddingSearchRequest = EmbeddingSearchRequest.builder()
+                .queryEmbedding(embedding)
+                .maxResults(2)
+                .build();
+
+        EmbeddingSearchResult<TextSegment> searchResult = embeddingStore.search(embeddingSearchRequest);
+        logger.info("向量数据库查询 => {}", searchResult.matches().toString());
+        return searchResult.matches().getFirst().embedded().toString();
+    }
+
+
+    @GetMapping("embedding/query1")
+    public String query1(){
+        Response<Embedding> embed = embeddingModel.embed("永鸡");
+        Embedding embedding = embed.content();
+        EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
+                .queryEmbedding(embedding)
+                .filter(MetadataFilterBuilder.metadataKey("author").isEqualTo("xbx1"))
+                .maxResults(3)
+                .build();
+
+        EmbeddingSearchResult<TextSegment> searchResult = embeddingStore.search(searchRequest);
+        logger.info("向量数据库查询 => {}", searchResult.matches().toString());
+        return searchResult.matches().toString();
+    }
+
 }

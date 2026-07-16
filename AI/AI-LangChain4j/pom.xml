@@ -50,6 +50,12 @@
             <artifactId>langchain4j-reactor</artifactId>
         </dependency>
 
+        <!--qdrant 需要配合中间件 Qdrant向量数据库使用-->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-qdrant</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

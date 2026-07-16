@@ -8,6 +8,7 @@ import com.xbx.study.ai.service.StreamingChatAssistant;
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.community.model.dashscope.WanxImageModel;
+import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
@@ -15,7 +16,9 @@ import dev.langchain4j.memory.chat.TokenWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.chat.request.json.JsonObjectSchema;
+import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.model.openai.OpenAiTokenCountEstimator;
 import dev.langchain4j.service.AiServices;
@@ -23,8 +26,12 @@ import dev.langchain4j.service.tool.ToolExecutor;
 import dev.langchain4j.service.tool.ToolProvider;
 import dev.langchain4j.service.tool.ToolProviderRequest;
 import dev.langchain4j.service.tool.ToolProviderResult;
+import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.store.embedding.qdrant.QdrantEmbeddingStore;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 import dev.langchain4j.store.memory.chat.InMemoryChatMemoryStore;
+import io.qdrant.client.QdrantClient;
+import io.qdrant.client.QdrantGrpcClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -87,6 +94,38 @@ public class LLMConfiguration {
 
                 .build();
     }
+
+    /**
+     * 向量模型
+     * @return
+     */
+    @Bean(name = "qwen_embedding")
+    public EmbeddingModel embeddingModel(){
+        return OpenAiEmbeddingModel.builder()
+                .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
+                .modelName("text-embedding-v4")
+                .apiKey(System.getenv("java_qwen_apikey"))
+                .logRequests(true)
+                .logResponses(true)
+                .build();
+    }
+
+
+    @Bean
+    public QdrantClient qdrantClient(){
+        QdrantGrpcClient.Builder grpcClientBuilder = QdrantGrpcClient.newBuilder("120.48.1.247", 6334, false);
+        return new QdrantClient(grpcClientBuilder.build());
+    }
+
+    @Bean
+    public EmbeddingStore<TextSegment> embeddingStore(){
+        return QdrantEmbeddingStore.builder()
+                .host("120.48.1.247")
+                .port(6334)
+                .collectionName("test-qdrant")
+                .build();
+    }
+
 
 
     /**
