@@ -2,22 +2,35 @@ package com.xbx.study.ai.config;
 
 import com.xbx.study.ai.listener.DeepseekChatModelListener;
 import com.xbx.study.ai.service.ChatMemoryAssistant;
+import com.xbx.study.ai.service.FunctionAssistant;
 import com.xbx.study.ai.service.LawAssistant;
 import com.xbx.study.ai.service.StreamingChatAssistant;
+import dev.langchain4j.agent.tool.ToolExecutionRequest;
+import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.community.model.dashscope.WanxImageModel;
+import dev.langchain4j.memory.ChatMemory;
+import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.memory.chat.TokenWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
+import dev.langchain4j.model.chat.request.json.JsonObjectSchema;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.model.openai.OpenAiTokenCountEstimator;
 import dev.langchain4j.service.AiServices;
+import dev.langchain4j.service.tool.ToolExecutor;
+import dev.langchain4j.service.tool.ToolProvider;
+import dev.langchain4j.service.tool.ToolProviderRequest;
+import dev.langchain4j.service.tool.ToolProviderResult;
+import dev.langchain4j.store.memory.chat.ChatMemoryStore;
+import dev.langchain4j.store.memory.chat.InMemoryChatMemoryStore;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 public class LLMConfiguration {
@@ -137,6 +150,104 @@ public class LLMConfiguration {
                 })
                 .build();
     }
+
+
+    /**
+     * 基于内存的缓存方案
+     * @return
+     */
+    @Bean
+    public ChatMemoryStore inMemoryChatMemoryStore(){
+        return new InMemoryChatMemoryStore();
+    }
+
+    /**
+     * InMemoryChatMemoryStore 本地存储介质的和 缓存方案 chatModel
+     * 可以实现接口ChatMemoryStore， 自定义缓存介质，如 redis mysql等
+     * @param chatModel
+     * @return
+     */
+    @Bean(name = "localMemoryAssistant")
+    public ChatMemoryAssistant localMemoryAssistant(@Qualifier("qwen") ChatModel chatModel, ChatMemoryStore inMemoryChatMemoryStore){
+
+        ChatMemoryProvider  chatMemoryProvider = new ChatMemoryProvider() {
+            @Override
+            public ChatMemory get(Object memoryId) {
+                return MessageWindowChatMemory.builder()
+                        .id(memoryId)
+                        .maxMessages(100)
+                        .chatMemoryStore(inMemoryChatMemoryStore)
+                        .build();
+            }
+        };
+
+        return AiServices.builder(ChatMemoryAssistant.class)
+                .chatModel(chatModel)
+                .chatMemoryProvider(chatMemoryProvider)
+                .build();
+
+    }
+
+
+    /**
+     * 缓存以token数 的缓存
+     * @param inMemoryChatMemoryStore
+     * @return
+     */
+    @Bean(name = "tokensMemory")
+    public ChatMemoryProvider chatMemoryProvider(ChatMemoryStore inMemoryChatMemoryStore){
+        return new ChatMemoryProvider() {
+            @Override
+            public ChatMemory get(Object o) {
+                return TokenWindowChatMemory.builder()
+                        .id(o)
+                        .maxTokens(1000,new OpenAiTokenCountEstimator("gpt-4."))
+                        .chatMemoryStore(inMemoryChatMemoryStore)
+                        .build();
+            }
+        };
+    }
+
+
+
+
+    /**
+     * 使用 tool 工具的chat
+     * @param chatModel  大模型
+     * @param  tokensMemory
+     * @return
+     */
+    @Bean(name = "functionAssistant")
+    public FunctionAssistant functionAssistant(@Qualifier("qwen") ChatModel chatModel, @Qualifier("tokensMemory") ChatMemoryProvider tokensMemory){
+        //工具说明 ToolSpecification
+        ToolSpecification toolSpecification = ToolSpecification.builder()
+                .name("xxx-开票助手")
+                .description("根据用户提交的开票信息，开具发票")
+                .parameters(JsonObjectSchema.builder()
+                        .addStringProperty("companyName","公司名称")
+                        .addStringProperty("dutyNumber","税号序列")
+                        .addStringProperty("amount","开票金额，保留两位有效数字").build())
+                .build();
+
+        //业务逻辑 ToolEcecutor
+        ToolExecutor toolExecutor = new ToolExecutor() {
+            @Override
+            public String execute(ToolExecutionRequest toolExecutionRequest, Object o) {
+                System.out.println("开票工具 id："+ toolExecutionRequest.id());
+                System.out.println("开票工具 名称："+toolExecutionRequest.name());
+                String arguments = toolExecutionRequest.arguments();
+                System.out.println("开票参数："+arguments);
+                return "success";
+            }
+        };
+
+        return AiServices.builder(FunctionAssistant.class)
+                .chatModel(chatModel)
+                .tools(Map.of(toolSpecification,toolExecutor))  //tools(Function Calling)
+                .chatMemoryProvider(tokensMemory)
+                .build();
+    }
+
 
 
 }

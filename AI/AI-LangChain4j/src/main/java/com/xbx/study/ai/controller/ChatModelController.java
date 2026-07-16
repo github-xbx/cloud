@@ -6,13 +6,11 @@ import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisParam;
 import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisResult;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import com.xbx.study.ai.po.prompt.LawPrompt;
-import com.xbx.study.ai.service.ChatAssistant;
-import com.xbx.study.ai.service.ChatMemoryAssistant;
-import com.xbx.study.ai.service.LawAssistant;
-import com.xbx.study.ai.service.StreamingChatAssistant;
+import com.xbx.study.ai.service.*;
 import dev.langchain4j.community.model.dashscope.WanxImageModel;
 import dev.langchain4j.community.model.dashscope.WanxImageStyle;
 import dev.langchain4j.data.image.Image;
+import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.ImageContent;
 import dev.langchain4j.data.message.TextContent;
 import dev.langchain4j.data.message.UserMessage;
@@ -21,10 +19,13 @@ import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
 import dev.langchain4j.model.image.ImageModel;
+import dev.langchain4j.model.input.Prompt;
+import dev.langchain4j.model.input.PromptTemplate;
 import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
 
 
+import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("chatModel")
@@ -49,11 +52,16 @@ public class ChatModelController {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatModelController.class);
 
-    @Resource(name = "deepseek")
-    public ChatModel deepseek;
-
     @Value("classpath:static/images/mi.jpg")
     private org.springframework.core.io.Resource resource;//import org.springframework.core.io.Resource;
+
+    @Resource
+    private ChatMemoryStore inMemoryChatMemoryStore;
+
+
+
+    @Resource(name = "deepseek")
+    public ChatModel deepseek;
 
     @Resource(name = "qwen")
     private ChatModel qwen;
@@ -72,7 +80,15 @@ public class ChatModelController {
     @Resource(name = "lawAssistant")
     private LawAssistant lawAssistant;
 
+    @Resource(name = "localMemoryAssistant")
+    private ChatMemoryAssistant localMemoryAssistant;
 
+    @Resource(name = "functionAssistant")
+    private FunctionAssistant functionAssistant;
+
+
+    @Resource(name = "functionHighAssistant")
+    private FunctionHighAssistant functionHighAssistant;
 
 
 
@@ -330,4 +346,69 @@ public class ChatModelController {
         return "success : "+ LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)+"<br> \n\n chat: "+chat;
     }
 
+
+    @GetMapping(value = "chatprompt/test3")
+    public String test3(){
+        // 默认 PromptTemplate 构造使用it属性作为默认占位符
+        String role = "外科医生";
+        String question = "牙疼";
+
+        //1.构造PromptTemplate模板
+        PromptTemplate template = PromptTemplate.from("你是一个{{it}}助手，{{question}}怎么办");
+        //2.有PromptTemplate 生成Prompt
+        Prompt prompt = template.apply(Map.of("it", role, "question", question));
+        //3. Prompt提示词变为UserMessage
+        UserMessage userMessage = prompt.toUserMessage();
+        //4.调用大模型
+        ChatResponse chat = qwen.chat(userMessage);
+        logger.info(chat.aiMessage().text());
+
+        return chat.toString();
+    }
+
+    /**
+     * 使用缓存的方式对话
+     * @param prompt
+     * @return
+     */
+    @GetMapping(value = "/memory/db")
+    public String memoryDb(@RequestParam(value = "prompt") String prompt){
+
+        String chat = localMemoryAssistant.chatWithChatMemory(1L, prompt);
+        logger.info(chat);
+        return chat;
+    }
+
+    /**
+     * 获取存储内容
+     * @param memoryId
+     * @return
+     */
+    @GetMapping("get/memoryDb")
+    public String getMemoryDb(@RequestParam(value = "memoryId") Long memoryId){
+
+        List<ChatMessage> messages = inMemoryChatMemoryStore.getMessages(memoryId);
+
+        return messages.toString();
+    }
+
+    /**
+     *  使用tools 工具
+     * @return
+     */
+    @GetMapping("tools/chat0")
+    public String toolsChat0(){
+        String chat = functionAssistant.chat("开张发票，公司：哈哈哈科技有限公司 税号：xxxxxxxxxx 金额：2345.555543", 1L);
+        logger.info("tools chat result => {}",chat);
+        String chat1 = functionAssistant.chat("你好",1L);
+        logger.info(" chat1 => {}",chat1);
+        return "success:"+chat;
+    }
+
+    @GetMapping("tools/chat1")
+    public String toolsChat1(){
+        String chat = functionHighAssistant.chat(1L, "最近15天 天津的天气情况");
+        logger.info("chat => {}",chat);
+        return chat;
+    }
 }
