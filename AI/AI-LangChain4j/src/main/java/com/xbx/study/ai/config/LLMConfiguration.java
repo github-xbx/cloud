@@ -21,12 +21,15 @@ import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.model.openai.OpenAiTokenCountEstimator;
+import dev.langchain4j.rag.content.retriever.ContentRetriever;
+import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.tool.ToolExecutor;
 import dev.langchain4j.service.tool.ToolProvider;
 import dev.langchain4j.service.tool.ToolProviderRequest;
 import dev.langchain4j.service.tool.ToolProviderResult;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 import dev.langchain4j.store.embedding.qdrant.QdrantEmbeddingStore;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 import dev.langchain4j.store.memory.chat.InMemoryChatMemoryStore;
@@ -117,7 +120,11 @@ public class LLMConfiguration {
         return new QdrantClient(grpcClientBuilder.build());
     }
 
-    @Bean
+    /**
+     * 基于 Qdrant的嵌入存储（适量数据库） Bean
+     * @return
+     */
+    @Bean(name = "embeddingStore")
     public EmbeddingStore<TextSegment> embeddingStore(){
         return QdrantEmbeddingStore.builder()
                 .host("120.48.1.247")
@@ -126,6 +133,14 @@ public class LLMConfiguration {
                 .build();
     }
 
+    /**
+     * 基于内存的 嵌入存储（矢量数据库） Bean
+     * @return
+     */
+    @Bean(name = "inMemoryEmbeddingStore")
+    public EmbeddingStore<TextSegment> inMemoryEmbeddingStore(){
+        return new InMemoryEmbeddingStore<>();
+    }
 
 
     /**
@@ -247,6 +262,18 @@ public class LLMConfiguration {
         };
     }
 
+    /**
+     * 基于message的缓存方案
+     * @param inMemoryChatMemoryStore
+     * @return
+     */
+    @Bean
+    public ChatMemory messageMemory(ChatMemoryStore inMemoryChatMemoryStore){
+       return MessageWindowChatMemory.builder()
+                .maxMessages(50)
+                .chatMemoryStore(inMemoryChatMemoryStore)
+                .build();
+    }
 
 
 
@@ -286,6 +313,20 @@ public class LLMConfiguration {
                 .chatMemoryProvider(tokensMemory)
                 .build();
     }
+
+
+
+    @Bean
+    public ContentRetriever contentRetriever(@Qualifier("inMemoryEmbeddingStore") EmbeddingStore<TextSegment> inMemoryEmbeddingStore){
+
+        return EmbeddingStoreContentRetriever.builder()
+                .embeddingStore(inMemoryEmbeddingStore)
+                //.embeddingModel(embeddingModel)
+                .maxResults(3) // 指定最多返回几条相关内容
+                .minScore(0.75) // 设定相似度阈值，过滤掉不相关的内容
+                .build();
+    }
+
 
 
 
