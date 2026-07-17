@@ -4,24 +4,55 @@ server:
 dubbo:
   application:
     name: cloud_dubbo_0
-  #注册中心
+  #注册中心 注册中心置为 N/A，表示不注册
   registry:
-    address: nacos://127.0.0.1:8848
-    username: nacos
-    password: nacos
-    parameters:
-      #nacos指定的命名空间
-      namespace: 295761fe-9512-4b57-b669-68321157e4af
-      group: cloud_dubbo_test
-  config-center:
-    address: nacos://127.0.0.1:8848
-    username: nacos
-    password: nacos
-    namespace: 295761fe-9512-4b57-b669-68321157e4af
-    group: cloud_dubbo_test
-    config-file: dubbo.yaml #全局的配置 Data ID
-    app-config-file: cloud_dubbo_0.yaml #应用特有的配置 Data ID
+    address: N/A
+  # 协议配置：使用 triple 协议监听 20880 端口
+  protocol:
+    port: 20880
+    name: tri
+    ext-protocol: dubbo  # 扩展协议，支持逗号分隔多个
+  scan:
+    base-packages:  com.xbx.study.dubbo.service
+
 
 logging:
   level:
     org.apache.dubbo: DEBUG
+
+resilience4j:
+  #熔断 断路器
+  circuitbreaker:
+    instances:
+      dubboCircuitBreaker:
+        failureRateThreshold: 50           #失败率阈值。当失败请求百分比达到此值时，断路器打开
+        slidingWindowType: COUNT_BASED     #滑动窗口类型。COUNT_BASED（基于请求数）或 TIME_BASED（基于时间）
+        slidingWindowSize: 10              #滑动窗口大小。COUNT_BASED 时表示请求数；TIME_BASED 时表示秒数
+        minimumNumberOfCalls: 5            #最小调用数。窗口内至少需要这么多请求，才会计算失败率
+        permittedNumberOfCallsInHalfOpenState: 3  #半开状态允许的调用数。断路器半开时，允许通过的测试请求数量
+        waitDurationInOpenState: 30s       #打开状态持续时间。断路器打开后，等待多久进入半开状态。
+        automaticTransitionFromOpenToHalfOpenEnabled: true  #自动过渡到半开。是否允许断路器在 waitDurationInOpenState 后自动从 OPEN 变为 HALF_OPEN。
+        slowCallRateThreshold: 50          #慢调用率阈值。当慢调用百分比达到此值时，断路器打开
+        slowCallDurationThreshold: 5s      #慢调用持续时间阈值。超过此时间的调用被视为慢调用
+        #recordExceptions:                 #记录为失败的异常。指定哪些异常应被计为失败
+        #ignoreExceptions:                 #忽略的异常。指定哪些异常应被忽略，不计为失败
+        register-health-indicator: true
+        eventConsumerBufferSize: 10        #事件消费者缓冲区大小。存储断路器事件的环形缓冲区大小
+
+  #限流规则
+  ratelimiter:
+    # resilience4j 2.x 用 instances，不是 limiters！
+    instances:
+      dubboRateLimiter:
+        limit-for-period: 1        # 每个周期允许 1 个请求
+        limit-refresh-period: 1s   # 刷新周期 1 秒
+        timeout-duration: 500ms    # 等待许可超时 500ms
+        register-health-indicator: true
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

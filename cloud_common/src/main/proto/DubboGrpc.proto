@@ -1,0 +1,22 @@
+syntax="proto3";
+
+
+option java_multiple_files = true;
+option java_package="com.xbx.study.dubbo.common.grpc";
+option java_outer_classname="DubboGrpcProto";
+
+service DubboGrpcService {
+
+  rpc hello(GrpcReq) returns(GrpcResp) {}
+
+}
+
+
+message GrpcReq{
+
+  string req=1;
+}
+
+message GrpcResp{
+  string resp=1;
+}

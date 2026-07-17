@@ -1,5 +1,7 @@
-package com.xbx.study.device.network.grpc;
+package com.xbx.study.device.gateway.handler;
 
+import com.xbx.study.device.network.core.message.BaseMessage;
+import com.xbx.study.device.network.grpc.handler.GrpcNetworkHandler;
 import com.xbx.study.device.network.grpc.message.GrpcMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,42 +10,18 @@ import org.slf4j.LoggerFactory;
  * gRPC 网络处理器示例
  * 业务层实现此接口来处理 gRPC 消息
  */
-public class DefaultGrpcNetworkHandler implements GrpcNetworkHandler {
+public class GrpcGatewayNetworkHandler implements GrpcNetworkHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(DefaultGrpcNetworkHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(GrpcGatewayNetworkHandler.class);
 
     @Override
-    public void onMessage(GrpcMessage message) {
+    public void onMessage(BaseMessage message) {
         log.info("收到gRPC消息: {}", message);
     }
 
     @Override
-    public void onMessage(String sessionId, GrpcMessage message) {
-        log.info("收到gRPC消息: sessionId={}, message={}", sessionId, message);
-        
-        // 根据消息类型处理
-        String type = message.getType();
-        if (type == null) {
-            log.warn("消息类型为空");
-            return;
-        }
-        
-        switch (type) {
-            case "REGISTER":
-                handleRegister(sessionId, message);
-                break;
-            case "HEARTBEAT":
-                handleHeartbeat(sessionId, message);
-                break;
-            case "DATA":
-                handleData(sessionId, message);
-                break;
-            case "RESPONSE":
-                handleResponse(sessionId, message);
-                break;
-            default:
-                log.warn("未知的消息类型: {}", type);
-        }
+    public void onMessage(String sessionId, BaseMessage message) {
+
     }
 
     @Override
@@ -72,7 +50,7 @@ public class DefaultGrpcNetworkHandler implements GrpcNetworkHandler {
     }
 
     @Override
-    public void onDeviceOffline(String sessionId, String deviceId) {
+    public void onDeviceOffline(String sessionId, String deviceId, String type) {
         log.info("设备离线: sessionId={}, deviceId={}", sessionId, deviceId);
         
         // TODO: 更新设备状态
@@ -115,4 +93,6 @@ public class DefaultGrpcNetworkHandler implements GrpcNetworkHandler {
         // TODO: 处理命令执行结果
         // TODO: 更新命令状态
     }
+
+
 }

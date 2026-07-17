@@ -5,6 +5,7 @@ import com.xbx.study.device.network.core.NetworkHandler;
 import com.xbx.study.device.network.core.NetworkServer;
 import com.xbx.study.device.network.core.enums.NetworkProtocol;
 import com.xbx.study.device.network.core.message.BaseMessage;
+import com.xbx.study.device.network.grpc.handler.GrpcNetworkHandler;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,25 +24,13 @@ public class GrpcNetworkProvider implements DeviceNetworkProvider, DisposableBea
     }
 
     @Override
-    public NetworkServer create(NetworkHandler<BaseMessage> handler) {
-        // 如果 handler 是 GrpcNetworkHandler，直接使用
-        if (handler instanceof GrpcNetworkHandler) {
-            server = new GrpcNetworkServer(port, (GrpcNetworkHandler) handler);
-        } else {
-            // 包装为 GrpcNetworkHandler
-            GrpcNetworkHandler grpcHandler = new GrpcNetworkHandler() {
-                @Override
-                public void onMessage(GrpcMessage message) {
-                    handler.onMessage(message);
-                }
-                
-                @Override
-                public void onMessage(String sessionId, GrpcMessage message) {
-                    handler.onMessage(sessionId, message);
-                }
-            };
-            server = new GrpcNetworkServer(port, grpcHandler);
+    public NetworkServer create(NetworkHandler handler) {
+        if (!(handler instanceof GrpcNetworkHandler grpcHandler)) {
+            throw new IllegalArgumentException("handler must implement GrpcNetworkHandler, got: " + handler.getClass().getName());
         }
+       // @SuppressWarnings("unchecked")
+
+        server = new GrpcNetworkServer(port, grpcHandler);
         return server;
     }
 

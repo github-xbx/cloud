@@ -1,11 +1,15 @@
-package com.xbx.study.device.network.grpc;
+package com.xbx.study.device.network.grpc.service;
 
+import com.xbx.study.device.network.core.message.BaseMessage;
+import com.xbx.study.device.network.grpc.GrpcSessionManager;
+import com.xbx.study.device.network.grpc.handler.GrpcNetworkHandler;
 import com.xbx.study.device.network.grpc.message.GrpcMessage;
 import com.xbx.study.device.network.grpc.proto.*;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -20,6 +24,7 @@ public class DeviceServiceImpl extends DeviceServiceGrpc.DeviceServiceImplBase {
     private final GrpcNetworkHandler handler;
 
     public DeviceServiceImpl(GrpcNetworkHandler handler) {
+        Objects.requireNonNull(handler);
         this.handler = handler;
     }
 
@@ -40,39 +45,15 @@ public class DeviceServiceImpl extends DeviceServiceGrpc.DeviceServiceImplBase {
 
             @Override
             public void onNext(DeviceMessage message) {
-                log.info("收到gRPC消息: sessionId={}, deviceId={}, type={}", 
-                        sessionId, message.getDeviceId(), message.getType());
-                
-                // 绑定设备
-                if (message.getDeviceId() != null && !message.getDeviceId().isEmpty()) {
-                    if (this.deviceId == null) {
-                        this.deviceId = message.getDeviceId();
-                        sessionManager.bindDevice(sessionId, this.deviceId);
-                        
-                        // 通知设备上线
-                        if (handler != null) {
-                            handler.onDeviceOnline(sessionId, this.deviceId);
-                        }
-                    }
-                }
-                
-                // 转换为 GrpcMessage 并传递给 handler
-                GrpcMessage grpcMessage = convertToGrpcMessage(sessionId, message);
-                if (handler != null) {
-                    handler.onMessage(sessionId, grpcMessage);
-                }
+                log.info("收到gRPC消息: sessionId={}, deviceId={}, type={}", sessionId, message.getDeviceId(), message.getType());
+                handler.onMessage(message,responseObserver);
             }
 
             @Override
             public void onError(Throwable t) {
                 log.error("gRPC双向流错误: sessionId={}", sessionId, t);
-                
-                // 通知设备离线
-                if (handler != null && this.deviceId != null) {
-                    handler.onDeviceOffline(sessionId, this.deviceId);
-                }
-                
-                sessionManager.unregisterSession(sessionId);
+                // 通知设备离线 报错
+                handler.onDeviceOffline(sessionId, this.deviceId, "ERROR");
             }
 
             @Override
@@ -80,11 +61,7 @@ public class DeviceServiceImpl extends DeviceServiceGrpc.DeviceServiceImplBase {
                 log.info("gRPC双向流完成: sessionId={}", sessionId);
                 
                 // 通知设备离线
-                if (handler != null && this.deviceId != null) {
-                    handler.onDeviceOffline(sessionId, this.deviceId);
-                }
-                
-                sessionManager.unregisterSession(sessionId);
+                handler.onDeviceOffline(sessionId, this.deviceId, "DEFAULT");
                 responseObserver.onCompleted();
             }
         };
@@ -100,26 +77,13 @@ public class DeviceServiceImpl extends DeviceServiceGrpc.DeviceServiceImplBase {
         log.info("gRPC客户端流建立: sessionId={}", sessionId);
 
         return new StreamObserver<DeviceData>() {
-            private String deviceId;
 
             @Override
             public void onNext(DeviceData data) {
-                log.info("收到设备数据: sessionId={}, deviceId={}, dataType={}", 
-                        sessionId, data.getDeviceId(), data.getDataType());
-                
-                // 绑定设备
-                if (data.getDeviceId() != null && !data.getDeviceId().isEmpty()) {
-                    if (this.deviceId == null) {
-                        this.deviceId = data.getDeviceId();
-                        sessionManager.bindDevice(sessionId, this.deviceId);
-                    }
-                }
-                
-                // 转换并处理
-                GrpcMessage grpcMessage = convertDataToGrpcMessage(sessionId, data);
-                if (handler != null) {
-                    handler.onMessage(sessionId, grpcMessage);
-                }
+                log.info("收到设备数据: sessionId={}, deviceId={}, dataType={}", sessionId, data.getDeviceId(), data.getDataType());
+
+                handler.onUpData(data);
+
             }
 
             @Override
@@ -130,10 +94,7 @@ public class DeviceServiceImpl extends DeviceServiceGrpc.DeviceServiceImplBase {
             @Override
             public void onCompleted() {
                 log.info("gRPC客户端流完成: sessionId={}", sessionId);
-                responseObserver.onNext(ReportResponse.newBuilder()
-                        .setSuccess(true)
-                        .setMessage("Report completed")
-                        .build());
+                responseObserver.onNext(ReportResponse.newBuilder().setSuccess(true).setMessage("Report completed").build());
                 responseObserver.onCompleted();
             }
         };
@@ -166,37 +127,20 @@ public class DeviceServiceImpl extends DeviceServiceGrpc.DeviceServiceImplBase {
     public void register(RegisterRequest request, StreamObserver<RegisterResponse> responseObserver) {
         String sessionId = UUID.randomUUID().toString();
         
-        log.info("设备注册: deviceId={}, token={}, deviceType={}", 
-                request.getDeviceId(), request.getToken(), request.getDeviceType());
+        log.info("设备注册: deviceId={}, token={}, deviceType={}", request.getDeviceId(), request.getToken(), request.getDeviceType());
         
         // 调用业务层处理注册
-        boolean success = true;
-        if (handler != null) {
-            success = handler.onDeviceRegister(
-                    sessionId, 
-                    request.getDeviceId(), 
-                    request.getToken(), 
-                    request.getDeviceType()
-            );
-        }
+        boolean success = handler.onDeviceRegister(sessionId, request.getDeviceId(), request.getToken(), request.getDeviceType());
         
         if (success) {
-            // 绑定设备
-            sessionManager.bindDevice(sessionId, request.getDeviceId());
-            
-            // 注册会话（使用 null observer，因为一元调用没有持久连接）
-            sessionManager.registerSession(sessionId, null);
-            
             // 通知设备上线
-            if (handler != null) {
-                handler.onDeviceOnline(sessionId, request.getDeviceId());
-            }
-            
-            responseObserver.onNext(RegisterResponse.newBuilder()
-                    .setSuccess(true)
+            handler.onDeviceOnline(sessionId, request.getDeviceId());
+
+            RegisterResponse registerSuccess = RegisterResponse.newBuilder().setSuccess(true)
                     .setSessionId(sessionId)
                     .setMessage("Register success")
-                    .build());
+                    .build();
+            responseObserver.onNext(registerSuccess);
         } else {
             responseObserver.onNext(RegisterResponse.newBuilder()
                     .setSuccess(false)
@@ -214,11 +158,8 @@ public class DeviceServiceImpl extends DeviceServiceGrpc.DeviceServiceImplBase {
         log.debug("收到心跳: deviceId={}, sessionId={}", request.getDeviceId(), request.getSessionId());
         
         // 调用业务层处理心跳
-        boolean success = true;
-        if (handler != null) {
-            success = handler.onHeartbeat(request.getSessionId(), request.getDeviceId());
-        }
-        
+        boolean success = handler.onHeartbeat(request.getSessionId(), request.getDeviceId());
+
         responseObserver.onNext(HeartbeatResponse.newBuilder()
                 .setSuccess(success)
                 .setServerTimestamp(System.currentTimeMillis())
@@ -240,16 +181,4 @@ public class DeviceServiceImpl extends DeviceServiceGrpc.DeviceServiceImplBase {
         return grpcMessage;
     }
 
-    /**
-     * 转换 DeviceData 为 GrpcMessage
-     */
-    private GrpcMessage convertDataToGrpcMessage(String sessionId, DeviceData data) {
-        GrpcMessage grpcMessage = new GrpcMessage();
-        grpcMessage.setDeviceId(data.getDeviceId());
-        grpcMessage.setSessionId(sessionId);
-        grpcMessage.setType("DATA");
-        grpcMessage.setPayload(data.getPayload());
-        grpcMessage.setTimestamp(data.getTimestamp());
-        return grpcMessage;
-    }
 }

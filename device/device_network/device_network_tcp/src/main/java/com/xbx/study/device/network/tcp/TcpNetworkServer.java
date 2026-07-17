@@ -4,6 +4,7 @@ import com.xbx.study.device.network.core.NetworkHandler;
 import com.xbx.study.device.network.core.NetworkServer;
 import com.xbx.study.device.network.core.message.BaseMessage;
 import com.xbx.study.device.network.core.message.NetworkDownlinkMessage;
+import com.xbx.study.device.network.tcp.handler.TcpNettyNetworkHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -17,21 +18,18 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+
 
 public class TcpNetworkServer implements NetworkServer {
 
     private static final Logger log = LoggerFactory.getLogger(TcpNetworkServer.class);
 
-    private TcpSessionManager sessionManager = TcpSessionManager.getInstance();
+    private final TcpSessionManager sessionManager = TcpSessionManager.getInstance();
 
     private int port;
 
@@ -39,12 +37,12 @@ public class TcpNetworkServer implements NetworkServer {
     private final EventLoopGroup workerGroup = new NioEventLoopGroup();
     private Channel serverChannel;
     private volatile boolean running;
-    private NetworkHandler<BaseMessage> handler;
+    private TcpNettyNetworkHandler handler;
 
     public TcpNetworkServer() {
     }
 
-    public TcpNetworkServer(int port, NetworkHandler<BaseMessage> handler) {
+    public TcpNetworkServer(int port, TcpNettyNetworkHandler handler) {
         this.port = port;
         this.handler = handler;
     }

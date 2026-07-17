@@ -9,10 +9,91 @@
     <artifactId>cloud_common</artifactId>
     <name>cloud_common</name>
 
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
 
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+        </dependency>
+
+        <!-- Dubbo Triple 运行时依赖（生成的 Triple 桩代码需要） -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- gRPC 运行时依赖（生成的 gRPC 桩代码需要） -->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
+
     <build>
         <finalName>cloud_common</finalName>
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.7.1</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <!-- 1. Dubbo Triple: 生成 protobuf 消息类 + Triple 桩 -->
+            <plugin>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-maven-plugin</artifactId>
+                <version>${dubbo.version}</version>
+                <executions>
+                    <execution>
+                        <id>dubbo-triple</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <protoSourceDir>${basedir}/src/main/proto</protoSourceDir>
+                    <outputDir>${project.build.directory}/generated-sources/protobuf/java</outputDir>
+                    <dubboGenerateType>tri</dubboGenerateType>
+                </configuration>
+            </plugin>
+
+            <!-- 2. gRPC 原生: 仅生成 gRPC 桩（消息类已由 dubbo 插件生成） -->
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.6.1</version>
+                <configuration>
+                    <protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>
+                    <pluginId>grpc-java</pluginId>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+                    <outputDirectory>${project.build.directory}/generated-sources/protobuf/java</outputDirectory>
+                    <clearOutputDirectory>false</clearOutputDirectory>   <!-- ★ 不清空，保留 dubbo 插件已生成的文件 -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>grpc-java</id>
+                        <goals>
+                            <goal>compile-custom</goal>   <!-- 只跑 gRPC 桩，不重复生成消息类 -->
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>

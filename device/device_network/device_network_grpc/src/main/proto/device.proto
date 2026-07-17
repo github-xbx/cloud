@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package com.xbx.study.device.network.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.xbx.study.device.network.grpc.proto";
+option java_outer_classname = "DeviceProto";
+
+// 设备通信服务
+service DeviceService {
+    // 双向流式通信
+    rpc communicate(stream DeviceMessage) returns (stream DeviceMessage);
+    
+    // 客户端流式通信（设备上报数据）
+    rpc report(stream DeviceData) returns (ReportResponse);
+    
+    // 服务端流式通信（服务端下发命令）
+    rpc sendCommand(CommandRequest) returns (stream CommandResponse);
+    
+    // 一元调用（设备注册）
+    rpc register(RegisterRequest) returns (RegisterResponse);
+    
+    // 一元调用（心跳）
+    rpc heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+// 设备消息（双向流）
+message DeviceMessage {
+    string message_id = 1;
+    string device_id = 2;
+    string session_id = 3;
+    MessageType type = 4;
+    string payload = 5;
+    int64 timestamp = 6;
+}
+
+// 消息类型
+enum MessageType {
+    UNKNOWN = 0;
+    REGISTER = 1;
+    HEARTBEAT = 2;
+    DATA = 3;
+    COMMAND = 4;
+    RESPONSE = 5;
+}
+
+// 设备数据上报
+message DeviceData {
+    string device_id = 1;
+    string session_id = 2;
+    string data_type = 3;
+    string payload = 4;
+    int64 timestamp = 5;
+}
+
+// 上报响应
+message ReportResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+// 命令请求
+message CommandRequest {
+    string command_id = 1;
+    string device_id = 2;
+    string command = 3;
+    string payload = 4;
+}
+
+// 命令响应
+message CommandResponse {
+    string command_id = 1;
+    bool success = 2;
+    string result = 3;
+    string message = 4;
+}
+
+// 注册请求
+message RegisterRequest {
+    string device_id = 1;
+    string token = 2;
+    string device_type = 3;
+    map<string, string> metadata = 4;
+}
+
+// 注册响应
+message RegisterResponse {
+    bool success = 1;
+    string session_id = 2;
+    string message = 3;
+}
+
+// 心跳请求
+message HeartbeatRequest {
+    string device_id = 1;
+    string session_id = 2;
+    int64 timestamp = 3;
+}
+
+// 心跳响应
+message HeartbeatResponse {
+    bool success = 1;
+    int64 server_timestamp = 2;
+}

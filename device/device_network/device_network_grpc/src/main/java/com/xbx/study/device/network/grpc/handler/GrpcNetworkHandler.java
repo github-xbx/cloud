@@ -1,13 +1,16 @@
-package com.xbx.study.device.network.grpc;
+package com.xbx.study.device.network.grpc.handler;
 
+import com.google.protobuf.Message;
 import com.xbx.study.device.network.core.NetworkHandler;
-import com.xbx.study.device.network.grpc.message.GrpcMessage;
+import com.xbx.study.device.network.core.message.BaseMessage;
+import com.xbx.study.device.network.grpc.proto.DeviceData;
+import io.grpc.stub.StreamObserver;
 
 /**
  * gRPC 网络处理器接口
  * 业务层实现此接口来处理 gRPC 消息
  */
-public interface GrpcNetworkHandler extends NetworkHandler<GrpcMessage> {
+public interface GrpcNetworkHandler extends NetworkHandler {
     
     /**
      * 处理设备注册
@@ -47,7 +50,26 @@ public interface GrpcNetworkHandler extends NetworkHandler<GrpcMessage> {
      * 
      * @param sessionId 会话ID
      * @param deviceId 设备ID
+     * @param type 离线类型
      */
-    default void onDeviceOffline(String sessionId, String deviceId) {
+    default void onDeviceOffline(String sessionId, String deviceId, String type) {
     }
+
+
+    @Override
+    default void onMessage(BaseMessage message){
+    }
+
+
+    default void onMessage(Message msg, StreamObserver<? extends Message> responseObserver){
+    }
+
+    /**
+     * 处理上送的数据
+     */
+    default void onUpData(DeviceData data){
+
+    }
+
+
 }
