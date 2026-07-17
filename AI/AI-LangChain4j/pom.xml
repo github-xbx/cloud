@@ -56,6 +56,18 @@
             <artifactId>langchain4j-qdrant</artifactId>
         </dependency>
 
+        <!-- langchain4j rag 使用， rag 简单的用法 -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-easy-rag</artifactId>
+        </dependency>
+
+        <!-- MCP Client 依赖 -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-mcp</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

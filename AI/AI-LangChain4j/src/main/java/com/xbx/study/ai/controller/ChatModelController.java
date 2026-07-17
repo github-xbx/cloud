@@ -9,6 +9,8 @@ import com.xbx.study.ai.po.prompt.LawPrompt;
 import com.xbx.study.ai.service.*;
 import dev.langchain4j.community.model.dashscope.WanxImageModel;
 import dev.langchain4j.community.model.dashscope.WanxImageStyle;
+import dev.langchain4j.data.document.Document;
+import dev.langchain4j.data.document.loader.FileSystemDocumentLoader;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.image.Image;
 import dev.langchain4j.data.message.ChatMessage;
@@ -31,6 +33,7 @@ import dev.langchain4j.model.output.TokenUsage;
 import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
 import dev.langchain4j.store.embedding.EmbeddingSearchResult;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.store.embedding.filter.MetadataFilterBuilder;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 import io.qdrant.client.QdrantClient;
@@ -105,9 +108,14 @@ public class ChatModelController {
     private EmbeddingModel embeddingModel;
     @Resource
     private QdrantClient qdrantClient;
-    @Resource
+    @Resource(name = "embeddingStore")
     private EmbeddingStore<TextSegment> embeddingStore;
 
+    @Resource(name = "inMemoryEmbeddingStore")
+    private EmbeddingStore<TextSegment> inMemoryEmbeddingStore;
+
+    @Resource
+    private ChatRagAssistant chatRagAssistant;
 
 
 
@@ -526,5 +534,21 @@ public class ChatModelController {
         logger.info("向量数据库查询 => {}", searchResult.matches().toString());
         return searchResult.matches().toString();
     }
+
+
+
+    @GetMapping("rag/add")
+    public String ragAdd(){
+        Document document = FileSystemDocumentLoader.loadDocument("E:\\code\\cloud\\AI\\AI-LangChain4j\\src\\main\\resources\\static\\pdf\\alibaba-java.pdf");
+        EmbeddingStoreIngestor.ingest(document, inMemoryEmbeddingStore);
+
+        String result = chatRagAssistant.chat("那应用分层该怎么分？");
+
+        logger.info("rag chat result => {}",result);
+
+        return result;
+    }
+
+
 
 }
