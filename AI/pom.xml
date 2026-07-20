@@ -11,6 +11,7 @@
     <name>AI Projects</name>
     <modules>
         <module>AI-LangChain4j</module>
+        <module>AI-copilotkit-project</module>
     </modules>
 
     <properties>
