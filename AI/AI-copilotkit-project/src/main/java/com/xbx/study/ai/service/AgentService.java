@@ -1,13 +1,16 @@
 package com.xbx.study.ai.service;
 
-import com.xbx.study.ai.dto.AgentMessage;
-import com.xbx.study.ai.dto.RunAgentInput;
+import com.xbx.study.ai.entity.dto.AgentMessage;
+import com.xbx.study.ai.entity.dto.RunAgentInput;
 import com.xbx.study.ai.event.AgUiEvent;
 import com.xbx.study.ai.event.impl.*;
+import com.xbx.study.ai.service.model.QwenChatAssistant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -15,6 +18,13 @@ import java.util.function.Consumer;
 @Service
 public class AgentService {
     private static final Logger logger = LoggerFactory.getLogger(AgentService.class);
+
+
+    private final QwenChatAssistant streamingChatAssistant;
+
+    public AgentService(QwenChatAssistant streamingChatAssistant) {
+        this.streamingChatAssistant = streamingChatAssistant;
+    }
 
 
     /**
@@ -93,6 +103,42 @@ public class AgentService {
 
 
 
+    }
+
+
+
+    public Flux<AgUiEvent> execute(RunAgentInput input){
+        String runId = input.getRunId();
+        String threadId = input.getThreadId();
+
+        // 3. 获取用户输入
+        String userInput = input.getMessages().stream()
+                .filter(m -> "user".equals(m.getRole()))
+                .map(AgentMessage::getContent)
+                .reduce((a, b) -> b) //获取最后一个元素
+                .orElse("你好");
+
+        String messageId = UUID.randomUUID().toString();
+
+        Flux<String> chatResponse = streamingChatAssistant.chat(userInput);
+
+
+        return Flux.concat(
+                Flux.just( new RunStartedEvent(runId, threadId)), // 1. 发射 RUN_STARTED 事件
+                // 2. 可选：发射初始状态快照
+                Flux.just(  new StateSnapshotEvent(Map.of("status", "processing", "threadId", threadId))),
+                // 6. 生成最终回复 (TEXT_MESSAGE 事件)
+                Flux.just(new TextMessageStartEvent(messageId, "assistant")),
+
+                chatResponse.map(chunk -> new TextMessageContentEvent(messageId, chunk)),
+
+                Flux.just(new TextMessageEndEvent(messageId)),
+
+                Flux.just(new StateDeltaEvent(Map.of("status", "completed"))),
+
+                Flux.just(new RunFinishedEvent(runId, threadId))
+
+        );
     }
 
 

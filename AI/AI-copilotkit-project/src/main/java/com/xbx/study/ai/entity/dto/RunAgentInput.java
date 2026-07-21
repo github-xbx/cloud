@@ -1,4 +1,4 @@
-package com.xbx.study.ai.dto;
+package com.xbx.study.ai.entity.dto;
 
 import java.util.List;
 import java.util.Map;

@@ -1,11 +1,15 @@
 package com.xbx.study.ai.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.xbx.study.ai.dto.RunAgentInput;
+import com.xbx.study.ai.entity.dto.AgentThread;
+import com.xbx.study.ai.entity.dto.RunAgentInput;
+import com.xbx.study.ai.entity.vo.AgentThreadsVo;
+import com.xbx.study.ai.event.AgUiEvent;
 import com.xbx.study.ai.service.AgentService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -27,7 +31,17 @@ public class AgentController {
     }
 
 
-
+    /**
+     * licenseStatus 所有可选值
+     * 值	前端行为
+     * "valid"	正式授权 ✅ — 所有功能开启
+     * "expiring"	即将到期 ⚠️ — 功能仍可用，但 UI 会显示续费提醒
+     * "expired"	已过期 ❌ — 付费功能全部关闭
+     * "invalid"	无效 license ❌ — 密钥格式不对，功能关闭
+     * "none"	未配置 license — 基础聊天可用，threads 等高级功能关
+     * "unknown"	未知状态 — 同上
+     * @return
+     */
     @GetMapping("/info")
     public Map<String, Object> getRuntimeInfo() {
         // 构建智能体列表，这里只注册了一个名为 "default" 的智能体
@@ -39,7 +53,9 @@ public class AgentController {
         // 返回标准格式的响应
         return Map.of(
                 "agents", agents,
-                "a2uiEnabled", false
+                "a2uiEnabled", false,
+                "version","0.0.1",
+                "licenseStatus","valid"
         );
     }
 
@@ -72,16 +88,24 @@ public class AgentController {
      nextCursor	string|null	❌	分页游标，null 表示没有更多页
      */
     @GetMapping("/threads")
-    public Map<String, Object> threads(@RequestParam("agentId") String agentId){
+    public AgentThreadsVo threads(@RequestParam("agentId") String agentId){
 
-        Map<String,Object> thread = Map.of("id", "1232321","name","测试名称","createdAt", LocalDateTime.now(),"archived",true);
+        Map<String,Object> thread = Map.of("id", "1232321","name","测试名称","createdAt", LocalDateTime.now(),"archived",false);
+
+        AgentThread agentThread = new AgentThread();
+        agentThread.setId(UUID.randomUUID().toString());
+        agentThread.setName("Thread 对话");
+        agentThread.setArchived(false);
+        agentThread.setCreateAt(LocalDateTime.now());
+        agentThread.setUpdatedAt(LocalDateTime.now());
+        agentThread.setLastRunAt(LocalDateTime.now());
 
 
-        Map<String, Object> map = new HashMap<>();
-        map.put("threads", List.of(thread));
-        map.put("joinCode",null);
-        map.put("nextCursor",null);
-        return map;
+        AgentThreadsVo vo = new AgentThreadsVo();
+        vo.setThreads(List.of(agentThread));
+        vo.setJoinCode("abcdefg");
+        vo.setNextCursor("10");
+        return vo;
 
     }
 
@@ -91,29 +115,11 @@ public class AgentController {
      * 返回 SSE 流，每个事件以 "data: " 前缀 + JSON 格式输出
      */
     @PostMapping(value = "/agent/{id}/run", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter chat(@RequestBody RunAgentInput input, @PathVariable("id") String agentID) {
-        SseEmitter emitter = new SseEmitter(600_000L); // 10分钟超时
+    public Flux<AgUiEvent> chat(@RequestBody RunAgentInput input, @PathVariable("id") String agentID) {
+
         System.out.println(agentID);
 
-        // 异步执行 Agent，避免阻塞主线程
-        new Thread(() -> {
-            try {
-                agentService.execute(input, event -> {
-                    try {
-                        // AG-UI 协议要求每个事件以 "data: " 开头
-                        String json = objectMapper.writeValueAsString(event);
-                        emitter.send(SseEmitter.event().data(json, MediaType.APPLICATION_JSON));
-                    } catch (IOException e) {
-                        emitter.completeWithError(e);
-                    }
-                });
-                emitter.complete();
-            } catch (Exception e) {
-                emitter.completeWithError(e);
-            }
-        }).start();
-
-        return emitter;
+        return agentService.execute(input);
     }
 
 }

@@ -1,4 +1,4 @@
-package com.xbx.study.ai.dto;
+package com.xbx.study.ai.entity.dto;
 
 public class AgentMessage {
     private String id;
