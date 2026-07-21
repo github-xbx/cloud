@@ -42,12 +42,12 @@ public class AgentService {
             String userInput = input.getMessages().stream()
                     .filter(m -> "user".equals(m.getRole()))
                     .map(AgentMessage::getContent)
-                    .findFirst()
+                    .reduce((a, b) -> b) //获取最后一个元素
                     .orElse("你好");
 
             // 4. 模拟推理过程 (REASONING 事件)
             String reasoningId = UUID.randomUUID().toString();
-            eventEmitter.accept(new ReasoningMessageStartEvent(reasoningId));
+            eventEmitter.accept(new ReasoningMessageStartEvent(reasoningId, "reasoning"));
 
             String[] reasoningParts = {"正在思考", "分析问题", "准备回答"};
             for (String part : reasoningParts) {
@@ -62,7 +62,7 @@ public class AgentService {
             eventEmitter.accept(new ToolCallArgsEvent(toolCallId, "{\"query\": \"" + userInput + "\"}"));
             Thread.sleep(300);
             eventEmitter.accept(new ToolCallEndEvent(toolCallId));
-            eventEmitter.accept(new ToolCallResultEvent(toolCallId, "找到了相关信息..."));
+            eventEmitter.accept(new ToolCallResultEvent(toolCallId, "找到了相关信息...",reasoningId));
 
             // 6. 生成最终回复 (TEXT_MESSAGE 事件)
             String messageId = UUID.randomUUID().toString();

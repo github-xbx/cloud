@@ -7,31 +7,31 @@ import java.util.Objects;
 
 public class ToolCallStartEvent extends AgUiEvent {
     private final String toolCallId;
-    private final String toolName;
+    private final String toolCallName;
 
-    public ToolCallStartEvent(String toolCallId, String toolName) {
+    public ToolCallStartEvent(String toolCallId, String toolCallName) {
         super(AgUiEventType.TOOL_CALL_START);
         this.toolCallId = toolCallId;
-        this.toolName = toolName;
+        this.toolCallName = toolCallName;
     }
 
     public String getToolCallId() {
         return toolCallId;
     }
 
-    public String getToolName() {
-        return toolName;
+    public String getToolCallName() {
+        return toolCallName;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         ToolCallStartEvent that = (ToolCallStartEvent) o;
-        return Objects.equals(toolCallId, that.toolCallId) && Objects.equals(toolName, that.toolName);
+        return Objects.equals(toolCallId, that.toolCallId) && Objects.equals(toolCallName, that.toolCallName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(toolCallId, toolName);
+        return Objects.hash(toolCallId, toolCallName);
     }
 }

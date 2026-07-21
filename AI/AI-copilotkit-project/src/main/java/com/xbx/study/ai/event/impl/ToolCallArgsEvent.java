@@ -7,31 +7,31 @@ import java.util.Objects;
 
 public class ToolCallArgsEvent extends AgUiEvent {
     private final String toolCallId;
-    private final String args; // JSON 格式的参数
+    private final String delta; // JSON 格式的参数
 
-    public ToolCallArgsEvent(String toolCallId, String args) {
+    public ToolCallArgsEvent(String toolCallId, String delta) {
         super(AgUiEventType.TOOL_CALL_ARGS);
         this.toolCallId = toolCallId;
-        this.args = args;
+        this.delta = delta;
     }
 
     public String getToolCallId() {
         return toolCallId;
     }
 
-    public String getArgs() {
-        return args;
+    public String getDelta() {
+        return delta;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         ToolCallArgsEvent that = (ToolCallArgsEvent) o;
-        return Objects.equals(toolCallId, that.toolCallId) && Objects.equals(args, that.args);
+        return Objects.equals(toolCallId, that.toolCallId) && Objects.equals(delta, that.delta);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(toolCallId, args);
+        return Objects.hash(toolCallId, delta);
     }
 }
