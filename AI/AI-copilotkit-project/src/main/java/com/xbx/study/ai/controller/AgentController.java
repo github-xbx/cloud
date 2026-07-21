@@ -3,6 +3,7 @@ package com.xbx.study.ai.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xbx.study.ai.entity.dto.AgentThread;
 import com.xbx.study.ai.entity.dto.RunAgentInput;
+import com.xbx.study.ai.entity.vo.AgentModeInfoVo;
 import com.xbx.study.ai.entity.vo.AgentThreadsVo;
 import com.xbx.study.ai.event.AgUiEvent;
 import com.xbx.study.ai.service.AgentService;
@@ -43,20 +44,14 @@ public class AgentController {
      * @return
      */
     @GetMapping("/info")
-    public Map<String, Object> getRuntimeInfo() {
+    public AgentModeInfoVo getRuntimeInfo() {
         // 构建智能体列表，这里只注册了一个名为 "default" 的智能体
-       Map<String, Map<String,String>> agents =
-                Map.of(
-                        "default", Map.of("name","deepseekv4","description","深度求索")
-                );
-
         // 返回标准格式的响应
-        return Map.of(
-                "agents", agents,
-                "a2uiEnabled", false,
-                "version","0.0.1",
-                "licenseStatus","valid"
-        );
+        return AgentModeInfoVo.builder()
+                .version("1.0.0")
+                .agents(new AgentModeInfoVo.Model("default", "千问", "qwen"))
+                .agents(new AgentModeInfoVo.Model("deepseek", "深度求索", "deepseekv4"))
+                .build();
     }
 
 
