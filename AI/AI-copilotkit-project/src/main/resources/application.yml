@@ -1,0 +1,4 @@
+#logging:
+#  level:
+#    dev:
+#      langchain4j: DEBUG

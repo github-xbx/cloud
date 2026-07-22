@@ -6,13 +6,14 @@ import com.xbx.study.ai.entity.dto.RunAgentInput;
 import com.xbx.study.ai.entity.vo.AgentModeInfoVo;
 import com.xbx.study.ai.entity.vo.AgentThreadsVo;
 import com.xbx.study.ai.event.AgUiEvent;
+import com.xbx.study.ai.event.impl.RunFinishedEvent;
+import com.xbx.study.ai.event.impl.RunStartedEvent;
 import com.xbx.study.ai.service.AgentService;
+import com.xbx.study.ai.service.model.QwenChatAssistant;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -23,13 +24,12 @@ public class AgentController {
 
 
     private final AgentService agentService;
-    private final ObjectMapper objectMapper;
 
 
-    public AgentController(AgentService agentService, ObjectMapper objectMapper) {
+    public AgentController(AgentService agentService) {
         this.agentService = agentService;
-        this.objectMapper = objectMapper;
     }
+
 
 
     /**
@@ -115,6 +115,47 @@ public class AgentController {
         System.out.println(agentID);
 
         return agentService.execute(input);
+    }
+
+
+    /**
+     * connect 接口概述
+     * connect 和 run 是 CopilotKit 的两个核心接口：
+     *
+     * 接口	用途	触发时机
+     * POST /agent/{agentId}/run	执行 Agent，处理用户消息并返回回复	用户发送消息时
+     * POST /agent/{agentId}/connect	连接已有线程，获取历史/实时事件流	打开或切换对话时
+     *
+     *
+     * 有两种处理方式：
+     *
+     * 方式一：返回空流（推荐，最简实现）
+     * 如果你的后端不需要实时推送能力，只需返回一个空的 SSE 流：
+     *
+     *
+     * data:{"type":"RUN_STARTED","threadId":"xxx","runId":"xxx"}
+     *
+     * data:{"type":"RUN_FINISHED","threadId":"xxx","runId":"xxx"}
+     * 方式二：返回历史消息
+     * 如果你想在 connect 时把该线程的历史消息回放给前端：
+     * data:{"type":"RUN_STARTED","threadId":"xxx","runId":"xxx"}
+     *
+     * data:{"type":"TEXT_MESSAGE_START","messageId":"msg-history-1","role":"assistant"}
+     * data:{"type":"TEXT_MESSAGE_CONTENT","messageId":"msg-history-1","delta":"你好！有什么可以帮助你的？"}
+     * data:{"type":"TEXT_MESSAGE_END","messageId":"msg-history-1"}
+     *
+     * data:{"type":"RUN_FINISHED","threadId":"xxx","runId":"xxx"}
+     *
+     */
+    @PostMapping(value = "/agent/{id}/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<AgUiEvent> connect(@RequestBody RunAgentInput input, @PathVariable("id") String agentID) {
+        String runId = input.getRunId();
+        String threadId = input.getThreadId();
+
+        return Flux.just(
+                new RunStartedEvent(runId, threadId),
+                new RunFinishedEvent(runId, threadId)
+        );
     }
 
 }

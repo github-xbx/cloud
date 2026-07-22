@@ -32,6 +32,21 @@ public class ModelConfig {
                 .build();
     }
 
+
+    @Bean(name = "deepseek_stream")
+    public StreamingChatModel deepseekStream(){
+        return OpenAiStreamingChatModel.builder()
+                .baseUrl("https://api.deepseek.com")
+                .apiKey(System.getenv("java_deepseek_apikey"))
+                .modelName("deepseek-v4-pro")
+                .logRequests(true)
+                .logResponses(true)
+                .reasoningEffort("high")
+                .returnThinking(true)  // 启用思考内容接收
+                .build();
+    }
+
+
     /**
      * 千问 3.5
      * @return
@@ -59,6 +74,7 @@ public class ModelConfig {
                 .modelName("qwen3-vl-235b-a22b-thinking")
                 .logRequests(true)
                 .logResponses(true)
+                .returnThinking(true)  // 关键：启用 reasoning_content → onPartialThinking 的路由
                 .build();
     }
 

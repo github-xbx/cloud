@@ -1,7 +1,7 @@
 package com.xbx.study.ai.service.model;
 
 
-import reactor.core.publisher.Flux;
+import dev.langchain4j.service.TokenStream;
 
 public interface QwenChatAssistant {
 
@@ -11,5 +11,5 @@ public interface QwenChatAssistant {
      * @param prompt
      * @return
      */
-    Flux<String> chat(String prompt);
+    TokenStream chat(String prompt);
 }

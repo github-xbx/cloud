@@ -5,20 +5,25 @@ import com.xbx.study.ai.entity.dto.RunAgentInput;
 import com.xbx.study.ai.event.AgUiEvent;
 import com.xbx.study.ai.event.impl.*;
 import com.xbx.study.ai.service.model.QwenChatAssistant;
+import dev.langchain4j.service.TokenStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 @Service
 public class AgentService {
     private static final Logger logger = LoggerFactory.getLogger(AgentService.class);
 
+    private static final String KEY_STATUS = "status";
+    private static final String KEY_THREAD_ID = "threadId";
+    private static final String VALUE_STATUS_PROCESSING = "processing";
+    private static final String VALUE_STATUS_COMPLETED = "completed";
 
     private final QwenChatAssistant streamingChatAssistant;
 
@@ -120,26 +125,69 @@ public class AgentService {
 
         String messageId = UUID.randomUUID().toString();
 
-        Flux<String> chatResponse = streamingChatAssistant.chat(userInput);
+       TokenStream chatResponse = streamingChatAssistant.chat(userInput);
 
-
-        return Flux.concat(
-                Flux.just( new RunStartedEvent(runId, threadId)), // 1. 发射 RUN_STARTED 事件
-                // 2. 可选：发射初始状态快照
-                Flux.just(  new StateSnapshotEvent(Map.of("status", "processing", "threadId", threadId))),
-                // 6. 生成最终回复 (TEXT_MESSAGE 事件)
-                Flux.just(new TextMessageStartEvent(messageId, "assistant")),
-
-                chatResponse.map(chunk -> new TextMessageContentEvent(messageId, chunk)),
-
-                Flux.just(new TextMessageEndEvent(messageId)),
-
-                Flux.just(new StateDeltaEvent(Map.of("status", "completed"))),
-
-                Flux.just(new RunFinishedEvent(runId, threadId))
-
-        );
+        return tokenStreamChangeFlux(chatResponse,runId,threadId);
     }
+
+
+
+
+     public Flux<AgUiEvent> tokenStreamChangeFlux(TokenStream tokenStream, String runId, String threadId){
+
+         String messageId = UUID.randomUUID().toString();
+         String reasoningId = UUID.randomUUID().toString();
+
+
+         AtomicBoolean think = new AtomicBoolean(true);
+         AtomicBoolean response = new AtomicBoolean(true);
+
+         return Flux.create(fluxSink -> {
+             // 1. 发射 RUN_STARTED 事件
+             fluxSink.next(new RunStartedEvent(runId, threadId));
+             // 2. 可选：发射初始状态快照
+             fluxSink.next(new StateSnapshotEvent(Map.of(KEY_STATUS, VALUE_STATUS_PROCESSING, KEY_THREAD_ID, threadId)));
+             tokenStream
+                     .onPartialThinking((thinking) -> {
+                         //思考输出
+                         if (think.get()){
+                             //第一设置推理开始
+                             fluxSink.next(new ReasoningMessageStartEvent(reasoningId, "reasoning"));
+                             think.set(false);
+                         }
+                         fluxSink.next(new ReasoningMessageContentEvent(reasoningId, thinking.text() ));
+
+                     })
+                     .onIntermediateResponse(chatResponse -> {
+                         System.out.println("think -> "+chatResponse.aiMessage().thinking());
+                         System.out.println(chatResponse.toString());
+
+                     })
+                     .onPartialResponseWithContext((partialResponse, context) -> {
+                         //带上下文的回答
+                         if (response.get()){
+                             fluxSink.next(new ReasoningMessageEndEvent(reasoningId));
+                             fluxSink.next(new TextMessageStartEvent(messageId, "assistant"));
+                             response.set(false);
+                         }
+                         fluxSink.next(new TextMessageContentEvent(messageId, partialResponse.text()));
+
+                     })
+                     .onCompleteResponse(chatResponse -> {
+                        //回答结束
+                         //结束回答
+                         fluxSink.next(new TextMessageEndEvent(messageId));
+                         fluxSink.next(new StateDeltaEvent(Map.of(KEY_STATUS, VALUE_STATUS_COMPLETED)));
+                         fluxSink.next(new RunFinishedEvent(runId, threadId));
+
+                     })
+                     .onError(fluxSink::error)
+                     .start();
+
+
+         });
+     }
+
 
 
 
