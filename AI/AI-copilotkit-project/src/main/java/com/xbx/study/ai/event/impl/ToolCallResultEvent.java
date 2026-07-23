@@ -1,11 +1,11 @@
 package com.xbx.study.ai.event.impl;
 
 import com.xbx.study.ai.enums.AgUiEventType;
-import com.xbx.study.ai.event.AgUiEvent;
+import com.xbx.study.ai.event.AGUIEvent;
 
 import java.util.Objects;
 
-public class ToolCallResultEvent extends AgUiEvent {
+public class ToolCallResultEvent extends AGUIEvent {
     private final String toolCallId;
     private final String content; // 工具执行结果
     private final String messageId;

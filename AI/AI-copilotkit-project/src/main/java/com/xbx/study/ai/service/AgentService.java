@@ -2,7 +2,8 @@ package com.xbx.study.ai.service;
 
 import com.xbx.study.ai.entity.dto.AgentMessage;
 import com.xbx.study.ai.entity.dto.RunAgentInput;
-import com.xbx.study.ai.event.AgUiEvent;
+import com.xbx.study.ai.enums.AGUIMessageRole;
+import com.xbx.study.ai.event.AGUIEvent;
 import com.xbx.study.ai.event.impl.*;
 import com.xbx.study.ai.service.model.QwenChatAssistant;
 import dev.langchain4j.service.TokenStream;
@@ -35,7 +36,7 @@ public class AgentService {
     /**
      * 执行agent 逻辑 通过时间消费发射 AG-UI 事件
      */
-    public void execute(RunAgentInput input, Consumer<AgUiEvent> eventEmitter){
+    public void execute(RunAgentInput input, Consumer<AGUIEvent> eventEmitter){
         String runId = input.getRunId();
         String threadId = input.getThreadId();
 
@@ -62,7 +63,7 @@ public class AgentService {
 
             // 4. 模拟推理过程 (REASONING 事件)
             String reasoningId = UUID.randomUUID().toString();
-            eventEmitter.accept(new ReasoningMessageStartEvent(reasoningId, "reasoning"));
+            eventEmitter.accept(new ReasoningMessageStartEvent(reasoningId));
 
             String[] reasoningParts = {"正在思考", "分析问题", "准备回答"};
             for (String part : reasoningParts) {
@@ -111,8 +112,12 @@ public class AgentService {
     }
 
 
-
-    public Flux<AgUiEvent> execute(RunAgentInput input){
+    /**
+     * 处理啊
+     * @param input
+     * @return
+     */
+    public Flux<AGUIEvent> execute(RunAgentInput input){
         String runId = input.getRunId();
         String threadId = input.getThreadId();
 
@@ -123,17 +128,20 @@ public class AgentService {
                 .reduce((a, b) -> b) //获取最后一个元素
                 .orElse("你好");
 
-        String messageId = UUID.randomUUID().toString();
-
-       TokenStream chatResponse = streamingChatAssistant.chat(userInput);
+        TokenStream chatResponse = streamingChatAssistant.chat(userInput);
 
         return tokenStreamChangeFlux(chatResponse,runId,threadId);
     }
 
 
-
-
-     public Flux<AgUiEvent> tokenStreamChangeFlux(TokenStream tokenStream, String runId, String threadId){
+    /**
+     * 将 大模型返回的数据 流式封装成AG-UI 协议的根式返回
+     * @param tokenStream 模型返回的流式数据
+     * @param runId
+     * @param threadId 对话 threadid
+     * @return
+     */
+     public Flux<AGUIEvent> tokenStreamChangeFlux(TokenStream tokenStream, String runId, String threadId){
 
          String messageId = UUID.randomUUID().toString();
          String reasoningId = UUID.randomUUID().toString();
@@ -152,7 +160,7 @@ public class AgentService {
                          //思考输出
                          if (think.get()){
                              //第一设置推理开始
-                             fluxSink.next(new ReasoningMessageStartEvent(reasoningId, "reasoning"));
+                             fluxSink.next(new ReasoningMessageStartEvent(reasoningId));
                              think.set(false);
                          }
                          fluxSink.next(new ReasoningMessageContentEvent(reasoningId, thinking.text() ));
@@ -167,7 +175,7 @@ public class AgentService {
                          //带上下文的回答
                          if (response.get()){
                              fluxSink.next(new ReasoningMessageEndEvent(reasoningId));
-                             fluxSink.next(new TextMessageStartEvent(messageId, "assistant"));
+                             fluxSink.next(new TextMessageStartEvent(messageId, AGUIMessageRole.ASSISTANT));
                              response.set(false);
                          }
                          fluxSink.next(new TextMessageContentEvent(messageId, partialResponse.text()));

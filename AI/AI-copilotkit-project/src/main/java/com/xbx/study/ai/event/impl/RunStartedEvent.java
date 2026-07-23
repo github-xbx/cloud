@@ -1,11 +1,11 @@
 package com.xbx.study.ai.event.impl;
 
 import com.xbx.study.ai.enums.AgUiEventType;
-import com.xbx.study.ai.event.AgUiEvent;
+import com.xbx.study.ai.event.AGUIEvent;
 
 import java.util.Objects;
 
-public class RunStartedEvent extends AgUiEvent {
+public class RunStartedEvent extends AGUIEvent {
     private final String runId;
     private final String threadId;
 

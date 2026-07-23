@@ -1,11 +1,11 @@
 package com.xbx.study.ai.event.impl;
 
 import com.xbx.study.ai.enums.AgUiEventType;
-import com.xbx.study.ai.event.AgUiEvent;
+import com.xbx.study.ai.event.AGUIEvent;
 
 import java.util.Objects;
 
-public class ToolCallArgsEvent extends AgUiEvent {
+public class ToolCallArgsEvent extends AGUIEvent {
     private final String toolCallId;
     private final String delta; // JSON 格式的参数
 

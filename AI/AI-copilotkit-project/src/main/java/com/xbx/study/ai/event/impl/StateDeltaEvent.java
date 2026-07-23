@@ -1,11 +1,11 @@
 package com.xbx.study.ai.event.impl;
 
 import com.xbx.study.ai.enums.AgUiEventType;
-import com.xbx.study.ai.event.AgUiEvent;
+import com.xbx.study.ai.event.AGUIEvent;
 
 import java.util.Objects;
 
-public class StateDeltaEvent extends AgUiEvent {
+public class StateDeltaEvent extends AGUIEvent {
     private final Object delta; // JSON Patch 格式的状态增量
 
     public StateDeltaEvent(Object delta) {

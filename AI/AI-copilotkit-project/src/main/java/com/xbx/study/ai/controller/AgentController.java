@@ -1,15 +1,12 @@
 package com.xbx.study.ai.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xbx.study.ai.entity.dto.AgentThread;
 import com.xbx.study.ai.entity.dto.RunAgentInput;
 import com.xbx.study.ai.entity.vo.AgentModeInfoVo;
 import com.xbx.study.ai.entity.vo.AgentThreadsVo;
-import com.xbx.study.ai.event.AgUiEvent;
-import com.xbx.study.ai.event.impl.RunFinishedEvent;
-import com.xbx.study.ai.event.impl.RunStartedEvent;
+import com.xbx.study.ai.event.AGUIEvent;
+import com.xbx.study.ai.event.impl.*;
 import com.xbx.study.ai.service.AgentService;
-import com.xbx.study.ai.service.model.QwenChatAssistant;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -110,7 +107,7 @@ public class AgentController {
      * 返回 SSE 流，每个事件以 "data: " 前缀 + JSON 格式输出
      */
     @PostMapping(value = "/agent/{id}/run", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<AgUiEvent> chat(@RequestBody RunAgentInput input, @PathVariable("id") String agentID) {
+    public Flux<AGUIEvent> chat(@RequestBody RunAgentInput input, @PathVariable("id") String agentID) {
 
         System.out.println(agentID);
 
@@ -148,12 +145,15 @@ public class AgentController {
      *
      */
     @PostMapping(value = "/agent/{id}/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<AgUiEvent> connect(@RequestBody RunAgentInput input, @PathVariable("id") String agentID) {
+    public Flux<AGUIEvent> connect(@RequestBody RunAgentInput input, @PathVariable("id") String agentID) {
         String runId = input.getRunId();
         String threadId = input.getThreadId();
 
         return Flux.just(
                 new RunStartedEvent(runId, threadId),
+                new TextMessageStartEvent("123","assistant"),
+                new TextMessageContentEvent("123","你好！有什么可以帮助你的？"),
+                new TextMessageEndEvent("123"),
                 new RunFinishedEvent(runId, threadId)
         );
     }

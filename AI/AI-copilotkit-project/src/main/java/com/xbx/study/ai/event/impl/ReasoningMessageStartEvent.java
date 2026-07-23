@@ -1,18 +1,18 @@
 package com.xbx.study.ai.event.impl;
 
+import com.xbx.study.ai.enums.AGUIMessageRole;
 import com.xbx.study.ai.enums.AgUiEventType;
-import com.xbx.study.ai.event.AgUiEvent;
+import com.xbx.study.ai.event.AGUIEvent;
 
 import java.util.Objects;
 
-public class ReasoningMessageStartEvent extends AgUiEvent {
+public class ReasoningMessageStartEvent extends AGUIEvent {
     private final String messageId;
-    private final String role;
+    private final String role = AGUIMessageRole.REASONING;
 
-    public ReasoningMessageStartEvent(String messageId, String role) {
+    public ReasoningMessageStartEvent(String messageId) {
         super(AgUiEventType.REASONING_MESSAGE_START);
         this.messageId = messageId;
-        this.role = role;
     }
 
     public String getMessageId() {

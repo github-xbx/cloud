@@ -1,11 +1,11 @@
 package com.xbx.study.ai.event.impl;
 
 import com.xbx.study.ai.enums.AgUiEventType;
-import com.xbx.study.ai.event.AgUiEvent;
+import com.xbx.study.ai.event.AGUIEvent;
 
 import java.util.Objects;
 
-public class TextMessageStartEvent extends AgUiEvent {
+public class TextMessageStartEvent extends AGUIEvent {
     private final String messageId;
     private final String role; // "user" | "assistant"
 

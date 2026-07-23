@@ -1,11 +1,11 @@
 package com.xbx.study.ai.event.impl;
 
 import com.xbx.study.ai.enums.AgUiEventType;
-import com.xbx.study.ai.event.AgUiEvent;
+import com.xbx.study.ai.event.AGUIEvent;
 
 import java.util.Objects;
 
-public class StateSnapshotEvent extends AgUiEvent {
+public class StateSnapshotEvent extends AGUIEvent {
     private final Object state; // 完整状态快照
 
     public StateSnapshotEvent(Object state) {
