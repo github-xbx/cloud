@@ -1,7 +1,8 @@
-package com.xbx.study.ai.event.impl;
+package ai.agui.event;
 
-import com.xbx.study.ai.enums.AgUiEventType;
-import com.xbx.study.ai.event.AGUIEvent;
+
+
+import ai.agui.enums.AgUiEventType;
 
 import java.util.Objects;
 

@@ -12,6 +12,7 @@
     <modules>
         <module>AI-LangChain4j</module>
         <module>AI-copilotkit-project</module>
+        <module>agui4j</module>
     </modules>
 
     <properties>

@@ -2,6 +2,7 @@ package com.xbx.study.ai.service.model;
 
 
 import dev.langchain4j.service.TokenStream;
+import reactor.core.publisher.Flux;
 
 public interface QwenChatAssistant {
 
@@ -12,4 +13,6 @@ public interface QwenChatAssistant {
      * @return
      */
     TokenStream chat(String prompt);
+
+    Flux<String> chat1(String prompt);
 }

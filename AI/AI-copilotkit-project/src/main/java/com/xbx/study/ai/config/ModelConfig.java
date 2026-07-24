@@ -3,6 +3,8 @@ package com.xbx.study.ai.config;
 import com.xbx.study.ai.service.model.QwenChatAssistant;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
+import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
+import dev.langchain4j.model.language.StreamingLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.service.AiServices;
@@ -82,7 +84,9 @@ public class ModelConfig {
 
     @Bean
     public QwenChatAssistant streamingChatAssistant(@Qualifier("qwen3") StreamingChatModel streamingChatModel){
-        return AiServices.create(QwenChatAssistant.class, streamingChatModel);
+        return AiServices.builder(QwenChatAssistant.class)
+                .streamingChatModel(streamingChatModel)
+                .build();
     }
 
 

@@ -1,4 +1,4 @@
-package com.xbx.study.ai.enums;
+package ai.agui.enums;
 
 /**
  * AG-UI 协议所有事件类型

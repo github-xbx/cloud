@@ -1,12 +1,13 @@
 package com.xbx.study.ai.controller;
 
+import ai.agui.event.AGUIEvent;
 import com.xbx.study.ai.entity.dto.AgentThread;
 import com.xbx.study.ai.entity.dto.RunAgentInput;
 import com.xbx.study.ai.entity.vo.AgentModeInfoVo;
 import com.xbx.study.ai.entity.vo.AgentThreadsVo;
-import com.xbx.study.ai.event.AGUIEvent;
-import com.xbx.study.ai.event.impl.*;
+
 import com.xbx.study.ai.service.AgentService;
+import com.xbx.study.ai.service.model.QwenChatAssistant;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -21,10 +22,18 @@ public class AgentController {
 
 
     private final AgentService agentService;
+    private final QwenChatAssistant qwenChatAssistant;
 
-
-    public AgentController(AgentService agentService) {
+    public AgentController(AgentService agentService, QwenChatAssistant qwenChatAssistant) {
         this.agentService = agentService;
+        this.qwenChatAssistant = qwenChatAssistant;
+    }
+
+
+    @GetMapping("test")
+    public Flux<Object> test(){
+        Flux<String> flux = qwenChatAssistant.chat1("nihao");
+        return null;
     }
 
 
@@ -150,11 +159,11 @@ public class AgentController {
         String threadId = input.getThreadId();
 
         return Flux.just(
-                new RunStartedEvent(runId, threadId),
-                new TextMessageStartEvent("123","assistant"),
-                new TextMessageContentEvent("123","你好！有什么可以帮助你的？"),
-                new TextMessageEndEvent("123"),
-                new RunFinishedEvent(runId, threadId)
+//                new RunStartedEvent(runId, threadId),
+//                new TextMessageStartEvent("123","assistant"),
+//                new TextMessageContentEvent("123","你好！有什么可以帮助你的？"),
+//                new TextMessageEndEvent("123"),
+//                new RunFinishedEvent(runId, threadId)
         );
     }
 
