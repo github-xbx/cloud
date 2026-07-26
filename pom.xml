@@ -39,6 +39,7 @@
         <module>device</module>
         <module>JDBC</module>
         <module>AI</module>
+        <module>DB</module>
 
 
     </modules>
