@@ -24,14 +24,16 @@ public class AGUIProtocol extends AGUIResultBase implements Consumer<FluxSink<AG
     private final AGUIEvent EVENT_RUN_STARTED;
     private final AGUIEvent EVENT_RUN_FINISHED;
     private AGUIEvent EVENT_RUN_ERROR;
-    private final String messageId;
+    private final String textMessageId;
+    private final String reasoningMessageId;
 
     public AGUIProtocol(String runId, String threadId, TokenStream tokenStream) {
         super(runId, threadId);
         this.tokenStream = tokenStream;
         this.EVENT_RUN_STARTED = new RunStartedEvent(runId, threadId);
         this.EVENT_RUN_FINISHED = new RunFinishedEvent(runId, threadId);
-        messageId = UUID.randomUUID().toString();
+        textMessageId = UUID.randomUUID().toString();     //消息id 独立的
+        reasoningMessageId = UUID.randomUUID().toString(); //思考消息id 独立的
     }
 
     @Override
@@ -41,23 +43,23 @@ public class AGUIProtocol extends AGUIResultBase implements Consumer<FluxSink<AG
         logger.info("==========> 开始回答 <==========");
         fluxSink.next(EVENT_RUN_STARTED); //开始
         fluxSink.next(new StateSnapshotEvent(Map.of("status", "processing", "threadId", getThreadId())));
-        fluxSink.next(new ReasoningMessageStartEvent(messageId));  //思考开始
+        fluxSink.next(new ReasoningMessageStartEvent(reasoningMessageId));  //思考开始
 
         tokenStream
                 .onPartialThinking(thinking -> {
-                    fluxSink.next(new ReasoningMessageContentEvent(messageId, thinking.text())); //思考内容
+                    fluxSink.next(new ReasoningMessageContentEvent(reasoningMessageId, thinking.text())); //思考内容
                 })
                 .onPartialResponse(response -> {
                     if (responseFirst.get()){
-                        fluxSink.next(new ReasoningMessageEndEvent(messageId)); //思考结束
-                        fluxSink.next(new TextMessageStartEvent(messageId, AGUIMessageRole.ASSISTANT)); //正式回答开始
+                        fluxSink.next(new ReasoningMessageEndEvent(reasoningMessageId)); //思考结束
+                        fluxSink.next(new TextMessageStartEvent(textMessageId, AGUIMessageRole.ASSISTANT)); //正式回答开始
                         responseFirst.set(false); //标志位 置 false
                     }
-                    fluxSink.next(new TextMessageContentEvent(messageId, response)); //回答内容
+                    fluxSink.next(new TextMessageContentEvent(textMessageId, response)); //回答内容
                 })
                 .onCompleteResponse(chatResponse -> {
 
-                    fluxSink.next(new TextMessageEndEvent(messageId)); //结束回答
+                    fluxSink.next(new TextMessageEndEvent(textMessageId)); //结束回答
                     fluxSink.next(new StateDeltaEvent(Map.of("status", "completed")));
                     fluxSink.next(EVENT_RUN_FINISHED); //结束
 

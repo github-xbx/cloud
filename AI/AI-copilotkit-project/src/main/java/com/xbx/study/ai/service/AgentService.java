@@ -1,7 +1,7 @@
 package com.xbx.study.ai.service;
 
 import ai.agui.AGUITemplate;
-import ai.agui.event.AGUIEvent;
+import ai.agui.event.*;
 import com.xbx.study.ai.entity.dto.AgentMessage;
 import com.xbx.study.ai.entity.dto.RunAgentInput;
 import com.xbx.study.ai.service.model.QwenChatAssistant;
@@ -10,11 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
-
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 @Service
 public class AgentService {
@@ -133,71 +128,6 @@ public class AgentService {
 
         return template.chat(runId, threadId, chatResponse);
     }
-
-
-    /**
-     * 将 大模型返回的数据 流式封装成AG-UI 协议的根式返回
-     * @param tokenStream 模型返回的流式数据
-     * @param runId
-     * @param threadId 对话 threadid
-     * @return
-     */
-     public Flux<AGUIEvent> tokenStreamChangeFlux(TokenStream tokenStream, String runId, String threadId){
-
-         String messageId = UUID.randomUUID().toString();
-         String reasoningId = UUID.randomUUID().toString();
-
-
-         AtomicBoolean think = new AtomicBoolean(true);
-         AtomicBoolean response = new AtomicBoolean(true);
-
-         return Flux.create(fluxSink -> {
-             // 1. 发射 RUN_STARTED 事件
-             fluxSink.next(new RunStartedEvent(runId, threadId));
-             // 2. 可选：发射初始状态快照
-             fluxSink.next(new StateSnapshotEvent(Map.of(KEY_STATUS, VALUE_STATUS_PROCESSING, KEY_THREAD_ID, threadId)));
-             tokenStream
-                     .onPartialThinking((thinking) -> {
-                         //思考输出
-                         if (think.get()){
-                             //第一设置推理开始
-                             fluxSink.next(new ReasoningMessageStartEvent(reasoningId));
-                             think.set(false);
-                         }
-                         fluxSink.next(new ReasoningMessageContentEvent(reasoningId, thinking.text() ));
-
-                     })
-                     .onIntermediateResponse(chatResponse -> {
-                         System.out.println("think -> "+chatResponse.aiMessage().thinking());
-                         System.out.println(chatResponse.toString());
-
-                     })
-                     .onPartialResponseWithContext((partialResponse, context) -> {
-                         //带上下文的回答
-                         if (response.get()){
-                             fluxSink.next(new ReasoningMessageEndEvent(reasoningId));
-                             fluxSink.next(new TextMessageStartEvent(messageId, AGUIMessageRole.ASSISTANT));
-                             response.set(false);
-                         }
-                         fluxSink.next(new TextMessageContentEvent(messageId, partialResponse.text()));
-
-                     })
-                     .onCompleteResponse(chatResponse -> {
-                        //回答结束
-                         //结束回答
-                         fluxSink.next(new TextMessageEndEvent(messageId));
-                         fluxSink.next(new StateDeltaEvent(Map.of(KEY_STATUS, VALUE_STATUS_COMPLETED)));
-                         fluxSink.next(new RunFinishedEvent(runId, threadId));
-
-                     })
-                     .onError(fluxSink::error)
-                     .start();
-
-
-         });
-     }
-
-
 
 
     private String generateResponse(String userInput) {
