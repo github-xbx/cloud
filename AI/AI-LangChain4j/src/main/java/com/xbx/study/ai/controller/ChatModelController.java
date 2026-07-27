@@ -117,6 +117,9 @@ public class ChatModelController {
     @Resource
     private ChatRagAssistant chatRagAssistant;
 
+    @Resource
+    private ChatSearchWebAssistant chatSearchWebAssistant;
+
 
 
 
@@ -550,5 +553,11 @@ public class ChatModelController {
     }
 
 
+    @GetMapping("searchweb/0")
+    public String searchWeb0(){
+        String question = "今日天津红旗农贸市场的蔬菜价格是多少";
+        String chat = chatSearchWebAssistant.chat(question);
+        return chat;
+    }
 
 }
