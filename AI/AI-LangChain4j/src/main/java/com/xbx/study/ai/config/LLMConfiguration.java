@@ -70,7 +70,7 @@ public class LLMConfiguration {
         return OpenAiChatModel.builder()
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
                 .apiKey(System.getenv("java_qwen_apikey"))
-                .modelName("qwen3.5-omni-plus-2026-03-15")
+                .modelName("qwen3.7-max-2026-05-20")
                 //.httpClientBuilder(new SpringRestClientBuilder())
                 .build();
     }
@@ -79,7 +79,7 @@ public class LLMConfiguration {
         return OpenAiStreamingChatModel.builder()
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
                 .apiKey(System.getenv("java_qwen_apikey"))
-                .modelName("qwen3-vl-235b-a22b-thinking")
+                .modelName("qwen3.7-max-2026-05-20")
                 .logRequests(true)
                 .logResponses(true)
                 .build();
@@ -92,7 +92,7 @@ public class LLMConfiguration {
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/api/v1" )
                 .apiKey(System.getenv("java_qwen_apikey"))
                 //.modelName("qwen-image-2.0-pro-2026-06-22")
-                .modelName("wanx2.0-t2i-turbo")
+                .modelName("wan2.7-t2v-2026-06-12")
                 //.logRequests(true)
 
                 .build();
@@ -106,7 +106,7 @@ public class LLMConfiguration {
     public EmbeddingModel embeddingModel(){
         return OpenAiEmbeddingModel.builder()
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
-                .modelName("text-embedding-v4")
+                .modelName("qwen3.7-text-embedding")
                 .apiKey(System.getenv("java_qwen_apikey"))
                 .logRequests(true)
                 .logResponses(true)
