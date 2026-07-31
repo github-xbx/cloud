@@ -20,6 +20,8 @@
     </developers>
 
     <modules>
+        <module>AI</module>
+        <module>DB</module>
 
         <module>common</module>
         <module>cloud_gateway</module>
@@ -31,15 +33,9 @@
         <module>cloud_dubbo_1</module>
         <module>cloud_common</module>
         <module>cloud_dubbo_0</module>
-
-
-
         <module>cloud_admin</module>
-
         <module>device</module>
-        <module>JDBC</module>
-        <module>AI</module>
-        <module>DB</module>
+
 
 
     </modules>
