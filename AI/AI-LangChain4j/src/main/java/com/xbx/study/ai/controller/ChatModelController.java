@@ -5,12 +5,15 @@ import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesis;
 import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisParam;
 import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisResult;
 import com.alibaba.dashscope.exception.NoApiKeyException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xbx.study.ai.po.prompt.LawPrompt;
 import com.xbx.study.ai.service.*;
 import dev.langchain4j.community.model.dashscope.WanxImageModel;
 import dev.langchain4j.community.model.dashscope.WanxImageStyle;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.loader.FileSystemDocumentLoader;
+import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.image.Image;
 import dev.langchain4j.data.message.ChatMessage;
@@ -50,13 +53,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("chatModel")
@@ -506,6 +508,84 @@ public class ChatModelController {
         return add;
     }
 
+    @GetMapping("embedding/add/file")
+    public String  addFile() throws IOException {
+
+        int fileBatchSize = 100;      // 从文件读取的批次
+        int embedBatchSize = 20;      // 单次嵌入请求的批次上限
+
+
+
+        // 2. 初始化分割器（根据模型上下文长度调整 chunk size）
+        // 这里按字符数分割，建议设置 maxSegmentSize 为 5000~10000 字符（约等于 1200~2500 tokens）
+        // 重叠（overlap）有助于保留上下文，设为 200~500 字符
+        var splitter = DocumentSplitters.recursive(5000, 500);
+
+        // 3. 流式读取 JSON 文件
+        ObjectMapper mapper = new ObjectMapper();
+        File jsonFile = new File("C:\\Users\\admin\\Desktop\\category.json");
+
+        try (var parser = mapper.getFactory().createParser(jsonFile)) {
+            var iterator = mapper.readerFor(JsonNode.class).readValues(parser);
+
+            List<TextSegment> allSegments = new ArrayList<>();
+            int batchSize = 100;
+
+            while (iterator.hasNext()) {
+                JsonNode node = (JsonNode) iterator.nextValue();
+
+                JsonNode content = node.get("content");
+                String text = content.get(0).toString();
+
+                // 构建 Document 并添加元数据
+                Document doc = Document.from(text);
+                doc.metadata().put("id", UUID.randomUUID());
+                doc.metadata().put("title", UUID.randomUUID());
+
+                // 分割成多个 TextSegment
+                List<TextSegment> segments = splitter.split(doc);
+                allSegments.addAll(segments);
+
+                // 4. 批量生成向量并写入
+                if (allSegments.size() >= batchSize) {
+                    // 将当前批次的 segments 分批嵌入
+                    for (int i = 0; i < allSegments.size(); i += embedBatchSize) {
+                        int end = Math.min(i + embedBatchSize, allSegments.size());
+                        List<TextSegment> sub = allSegments.subList(i, end);
+                        List<Embedding> embeddings = embeddingModel.embedAll(sub).content();
+                        embeddingStore.addAll(embeddings, sub);
+                    }
+                    allSegments.clear();
+                }
+            }
+
+            // 处理最后一批
+            if (!allSegments.isEmpty()) {
+                for (int i = 0; i < allSegments.size(); i += embedBatchSize) {
+                    int end = Math.min(i + embedBatchSize, allSegments.size());
+                    List<TextSegment> sub = allSegments.subList(i, end);
+                    List<Embedding> embeddings = embeddingModel.embedAll(sub).content();
+                    embeddingStore.addAll(embeddings, sub);
+                }
+            }
+        }
+
+
+
+
+
+        return "数据导入完成！";
+    }
+
+
+
+
+
+
+
+
+
+
 
     @GetMapping("embedding/query0")
     public String query0(){
@@ -555,7 +635,7 @@ public class ChatModelController {
 
     @GetMapping("searchweb/0")
     public String searchWeb0(){
-        String question = "今日天津红旗农贸市场的蔬菜价格是多少";
+        String question = "今日上海曹安菜篮子股份有限公司的蔬菜价格是多少";
         String chat = chatSearchWebAssistant.chat(question);
         return chat;
     }
