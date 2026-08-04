@@ -12,6 +12,23 @@
     <name>AI-LangChain4j</name>
 
     <dependencies>
+
+
+        <dependency>
+            <groupId>rpc.proto</groupId>
+            <artifactId>protobuf</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/net.devh/grpc-server-spring-boot-starter -->
+        <dependency>
+            <groupId>net.devh</groupId>
+            <artifactId>grpc-server-spring-boot-starter</artifactId>
+            <version>3.1.0.RELEASE</version>
+        </dependency>
+
+
+
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

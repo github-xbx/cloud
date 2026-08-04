@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+
+option java_multiple_files = true;
+option java_package = "grpc.proto.ai";
+option java_outer_classname = "CityProto";
+
+
+service CityService{
+  rpc addressToCity(ReqMessage) returns (RespMessage);
+}
+
+
+
+message ReqMessage{
+  string address = 1;
+}
+
+
+message RespMessage{
+  string city = 1;
+}
+
+
+

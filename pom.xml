@@ -22,6 +22,7 @@
     <modules>
         <module>AI</module>
         <module>DB</module>
+        <module>RPC</module>
 
         <module>common</module>
         <module>cloud_gateway</module>

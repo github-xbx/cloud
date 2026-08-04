@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Map;
 
 /**
@@ -30,8 +31,10 @@ public class BoChaWebSearchTool {
 
         String json;
 
+        String localDate = LocalDate.now().toString();
+
         try {
-             json = objectMapper.writeValueAsString(Map.of("query", query, "freshness", "nolimit", "summary", true));
+             json = objectMapper.writeValueAsString(Map.of("query", query, "freshness",localDate , "summary", true));
 
             RestClient.ResponseSpec response = restClient.post()
                     .uri(url)
