@@ -4,12 +4,17 @@ import ai.agui.AGUITemplate;
 import ai.agui.event.*;
 import com.xbx.study.ai.entity.dto.AgentMessage;
 import com.xbx.study.ai.entity.dto.RunAgentInput;
+import com.xbx.study.ai.entity.po.AiThreadPo;
+import com.xbx.study.ai.mapper.AiThreadMapper;
 import com.xbx.study.ai.service.model.QwenChatAssistant;
 import dev.langchain4j.service.TokenStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
+
+import java.time.LocalDateTime;
 
 @Service
 public class AgentService {
@@ -21,9 +26,11 @@ public class AgentService {
     private static final String VALUE_STATUS_COMPLETED = "completed";
 
     private final QwenChatAssistant streamingChatAssistant;
+    private final AiThreadMapper aiThreadMapper;
 
-    public AgentService(QwenChatAssistant streamingChatAssistant) {
+    public AgentService(QwenChatAssistant streamingChatAssistant, AiThreadMapper aiThreadMapper) {
         this.streamingChatAssistant = streamingChatAssistant;
+        this.aiThreadMapper = aiThreadMapper;
     }
 
 
@@ -111,9 +118,12 @@ public class AgentService {
      * @param input
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public Flux<AGUIEvent> execute(RunAgentInput input){
         String runId = input.getRunId();
         String threadId = input.getThreadId();
+
+        LocalDateTime nowTime = LocalDateTime.now();
 
         // 3. 获取用户输入
         String userInput = input.getMessages().stream()
@@ -121,6 +131,24 @@ public class AgentService {
                 .map(AgentMessage::getContent)
                 .reduce((a, b) -> b) //获取最后一个元素
                 .orElse("你好");
+
+
+        AiThreadPo aiThreadPo = aiThreadMapper.selectByThreadId(threadId);
+        if (aiThreadPo == null){
+            //新增
+            aiThreadPo = new AiThreadPo();
+            aiThreadPo.setThreadId(threadId);
+            aiThreadPo.setThreadName(userInput);
+            aiThreadPo.setCreateAt(nowTime);
+            aiThreadPo.setUpdateAt(nowTime);
+            aiThreadPo.setLastRunAt(nowTime);
+            aiThreadMapper.insert(aiThreadPo);
+        }else {
+            //修改
+            aiThreadMapper.updateTimeByThreadId(threadId, nowTime);
+        }
+
+
 
         TokenStream chatResponse = streamingChatAssistant.chat(userInput);
 

@@ -73,7 +73,7 @@ public class ModelConfig {
         return OpenAiStreamingChatModel.builder()
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
                 .apiKey(System.getenv("java_qwen_apikey"))
-                .modelName("qwen3-vl-235b-a22b-thinking")
+                .modelName("qwen3.7-max-2026-05-20")
                 .logRequests(true)
                 .logResponses(true)
                 .returnThinking(true)  // 关键：启用 reasoning_content → onPartialThinking 的路由
