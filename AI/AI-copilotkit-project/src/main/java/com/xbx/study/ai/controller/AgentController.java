@@ -88,7 +88,7 @@ public class AgentController {
      nextCursor	string|null	❌	分页游标，null 表示没有更多页
      */
     @GetMapping("/threads")
-    public AgentThreadsVo threads(@RequestParam("agentId") String agentId, @RequestParam("cursor") Integer cursor){
+    public AgentThreadsVo threads(@RequestParam("agentId") String agentId, @RequestParam(value = "cursor",defaultValue = "1") Integer cursor){
 
         PageInfo<AiThreadPo> pageInfo = agentService.threadList(cursor);
         List<AgentThread> list = pageInfo.getList().stream().map(po -> {
