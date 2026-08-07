@@ -19,7 +19,17 @@ public class AiMessagePo {
 
     private LocalDateTime createAt;
 
-    private LocalDateTime updateAt;
+
+    public AiMessagePo(){}
+
+    public AiMessagePo(String messageId, String threadId, String runId, String role, String content, LocalDateTime createAt) {
+        this.messageId = messageId;
+        this.threadId = threadId;
+        this.runId = runId;
+        this.role = role;
+        this.content = content;
+        this.createAt = createAt;
+    }
 
     public Long getId() {
         return id;
@@ -77,11 +87,4 @@ public class AiMessagePo {
         this.createAt = createAt;
     }
 
-    public LocalDateTime getUpdateAt() {
-        return updateAt;
-    }
-
-    public void setUpdateAt(LocalDateTime updateAt) {
-        this.updateAt = updateAt;
-    }
 }

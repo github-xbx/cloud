@@ -12,8 +12,8 @@ public class AGUITemplate {
      * @param
      * @return
      */
-    public Flux<AGUIEvent> chat(String runID, String threadID, TokenStream tokenStream){
-        AGUIProtocol aguiProtocol = new AGUIProtocol(runID, threadID, tokenStream);
+    public Flux<AGUIEvent> chat(String runID, String threadID, TokenStream tokenStream, String textMessageId, String reasoningMessageId){
+        AGUIProtocol aguiProtocol = new AGUIProtocol(runID, threadID, tokenStream, textMessageId, reasoningMessageId);
         return Flux.create(aguiProtocol);
     }
 

@@ -4,9 +4,14 @@ import com.xbx.study.ai.entity.po.AiThreadPo;
 import org.apache.ibatis.annotations.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Mapper
 public interface AiThreadMapper {
+
+
+    @Select("SELECT * FROM ai_thread")
+    List<AiThreadPo> selectAll();
 
 
     @Insert("INSERT INTO ai_thread(thread_id,thread_name,create_at,update_at,last_run_at) VALUES (#{thread.threadId}, #{thread.threadName} , #{thread.createAt} , #{thread.updateAt} , #{thread.lastRunAt} )")

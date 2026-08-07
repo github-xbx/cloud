@@ -33,9 +33,11 @@ spring:
 # MyBatis 配置
 mybatis:
   type-aliases-package: com.xbx.study.ai.entity.po
+
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
 
 
 

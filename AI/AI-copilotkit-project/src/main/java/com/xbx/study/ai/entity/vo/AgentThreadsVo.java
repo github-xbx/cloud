@@ -7,7 +7,7 @@ import java.util.List;
 public class AgentThreadsVo {
     private List<AgentThread> threads;
     private String joinCode;
-    private String nextCursor;
+    private Integer nextCursor;
 
     public List<AgentThread> getThreads() {
         return threads;
@@ -25,11 +25,11 @@ public class AgentThreadsVo {
         this.joinCode = joinCode;
     }
 
-    public String getNextCursor() {
+    public Integer getNextCursor() {
         return nextCursor;
     }
 
-    public void setNextCursor(String nextCursor) {
+    public void setNextCursor(Integer nextCursor) {
         this.nextCursor = nextCursor;
     }
 }

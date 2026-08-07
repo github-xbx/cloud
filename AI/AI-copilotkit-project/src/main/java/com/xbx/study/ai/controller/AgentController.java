@@ -1,8 +1,10 @@
 package com.xbx.study.ai.controller;
 
 import ai.agui.event.AGUIEvent;
+import com.github.pagehelper.PageInfo;
 import com.xbx.study.ai.entity.dto.AgentThread;
 import com.xbx.study.ai.entity.dto.RunAgentInput;
+import com.xbx.study.ai.entity.po.AiThreadPo;
 import com.xbx.study.ai.entity.vo.AgentModeInfoVo;
 import com.xbx.study.ai.entity.vo.AgentThreadsVo;
 
@@ -14,6 +16,7 @@ import reactor.core.publisher.Flux;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/copilotkit")
@@ -30,11 +33,7 @@ public class AgentController {
     }
 
 
-    @GetMapping("test")
-    public Flux<Object> test(){
-        Flux<String> flux = qwenChatAssistant.chat1("nihao");
-        return null;
-    }
+
 
 
 
@@ -89,23 +88,27 @@ public class AgentController {
      nextCursor	string|null	❌	分页游标，null 表示没有更多页
      */
     @GetMapping("/threads")
-    public AgentThreadsVo threads(@RequestParam("agentId") String agentId){
+    public AgentThreadsVo threads(@RequestParam("agentId") String agentId, @RequestParam("cursor") Integer cursor){
 
-        Map<String,Object> thread = Map.of("id", "1232321","name","测试名称","createdAt", LocalDateTime.now(),"archived",false);
-
-        AgentThread agentThread = new AgentThread();
-        agentThread.setId(UUID.randomUUID().toString());
-        agentThread.setName("Thread 对话");
-        agentThread.setArchived(false);
-        agentThread.setCreateAt(LocalDateTime.now());
-        agentThread.setUpdatedAt(LocalDateTime.now());
-        agentThread.setLastRunAt(LocalDateTime.now());
-
+        PageInfo<AiThreadPo> pageInfo = agentService.threadList(cursor);
+        List<AgentThread> list = pageInfo.getList().stream().map(po -> {
+            AgentThread agentThread = new AgentThread();
+            agentThread.setId(po.getThreadId());
+            agentThread.setName(po.getThreadName());
+            agentThread.setArchived(false);
+            agentThread.setCreateAt(po.getCreateAt());
+            agentThread.setUpdatedAt(po.getUpdateAt());
+            agentThread.setLastRunAt(po.getLastRunAt());
+            return agentThread;
+        }).toList();
 
         AgentThreadsVo vo = new AgentThreadsVo();
-        vo.setThreads(List.of(agentThread));
-        vo.setJoinCode("abcdefg");
-        vo.setNextCursor("10");
+        vo.setThreads(list);
+        //vo.setJoinCode("abcdefg");
+        if (pageInfo.getNextPage() > 0){
+            vo.setNextCursor(pageInfo.getNextPage());
+        }
+
         return vo;
 
     }

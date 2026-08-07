@@ -27,13 +27,13 @@ public class AGUIProtocol extends AGUIResultBase implements Consumer<FluxSink<AG
     private final String textMessageId;
     private final String reasoningMessageId;
 
-    public AGUIProtocol(String runId, String threadId, TokenStream tokenStream) {
+    public AGUIProtocol(String runId, String threadId, TokenStream tokenStream, String textMessageId, String reasoningMessageId) {
         super(runId, threadId);
         this.tokenStream = tokenStream;
+        this.textMessageId = textMessageId;
+        this.reasoningMessageId = reasoningMessageId;
         this.EVENT_RUN_STARTED = new RunStartedEvent(runId, threadId);
         this.EVENT_RUN_FINISHED = new RunFinishedEvent(runId, threadId);
-        textMessageId = UUID.randomUUID().toString();     //消息id 独立的
-        reasoningMessageId = UUID.randomUUID().toString(); //思考消息id 独立的
     }
 
     @Override
