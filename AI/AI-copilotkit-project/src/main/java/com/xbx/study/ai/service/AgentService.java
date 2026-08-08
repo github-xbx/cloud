@@ -2,14 +2,28 @@ package com.xbx.study.ai.service;
 
 import ai.agui.AGUITemplate;
 import ai.agui.event.*;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.xbx.study.ai.entity.dto.AgentMessage;
+import com.xbx.study.ai.entity.dto.AgentThread;
 import com.xbx.study.ai.entity.dto.RunAgentInput;
+import com.xbx.study.ai.entity.po.AiMessagePo;
+import com.xbx.study.ai.entity.po.AiThreadPo;
+import com.xbx.study.ai.mapper.AiMessageMapper;
+import com.xbx.study.ai.mapper.AiThreadMapper;
 import com.xbx.study.ai.service.model.QwenChatAssistant;
+import dev.langchain4j.invocation.InvocationParameters;
 import dev.langchain4j.service.TokenStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AgentService {
@@ -20,11 +34,32 @@ public class AgentService {
     private static final String VALUE_STATUS_PROCESSING = "processing";
     private static final String VALUE_STATUS_COMPLETED = "completed";
 
-    private final QwenChatAssistant streamingChatAssistant;
+    private static final Integer PAGE_SIZE = 5;
 
-    public AgentService(QwenChatAssistant streamingChatAssistant) {
+    private final QwenChatAssistant streamingChatAssistant;
+    private final AiThreadMapper aiThreadMapper;
+    private final AiMessageMapper aiMessageMapper;
+
+
+
+    public AgentService(QwenChatAssistant streamingChatAssistant, AiThreadMapper aiThreadMapper, AiMessageMapper aiMessageMapper) {
         this.streamingChatAssistant = streamingChatAssistant;
+        this.aiThreadMapper = aiThreadMapper;
+        this.aiMessageMapper = aiMessageMapper;
     }
+
+
+
+
+    @Transactional
+    public PageInfo<AiThreadPo> threadList(Integer pageNum){
+        //pageNum = pageNum != null ? pageNum : 1;
+        PageHelper.startPage(pageNum,PAGE_SIZE);
+        List<AiThreadPo> aiThreadPos = aiThreadMapper.selectAll();
+        return new PageInfo<>(aiThreadPos);
+    }
+
+
 
 
     /**
@@ -106,35 +141,61 @@ public class AgentService {
 //    }
 
 
+    @Transactional(rollbackFor = Exception.class)
+    public void saveDb(String threadId, String runId,AgentMessage agentMessage){
+        LocalDateTime nowTime = LocalDateTime.now();
+        AiThreadPo aiThreadPo = aiThreadMapper.selectByThreadId(threadId);
+        if (aiThreadPo == null){
+            //新增
+            aiThreadPo = new AiThreadPo();
+            aiThreadPo.setThreadId(threadId);
+            aiThreadPo.setThreadName(agentMessage.getContent());
+            aiThreadPo.setCreateAt(nowTime);
+            aiThreadPo.setUpdateAt(nowTime);
+            aiThreadPo.setLastRunAt(nowTime);
+            aiThreadMapper.insert(aiThreadPo);
+        }else {
+            //修改
+            aiThreadMapper.updateTimeByThreadId(threadId, nowTime);
+        }
+
+        //保存消息 用户提问的消息
+        AiMessagePo aiMessagePo = new AiMessagePo(agentMessage.getId(), threadId, runId, agentMessage.getRole(), agentMessage.getContent(), nowTime);
+        aiMessageMapper.insert(aiMessagePo);
+
+
+    }
+
+
     /**
      * 处理啊
      * @param input
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public Flux<AGUIEvent> execute(RunAgentInput input){
         String runId = input.getRunId();
         String threadId = input.getThreadId();
+        String textId = UUID.randomUUID().toString();
+        String thinkId = UUID.randomUUID().toString();
 
         // 3. 获取用户输入
-        String userInput = input.getMessages().stream()
+        AgentMessage agentMessage = input.getMessages().stream()
                 .filter(m -> "user".equals(m.getRole()))
-                .map(AgentMessage::getContent)
                 .reduce((a, b) -> b) //获取最后一个元素
-                .orElse("你好");
+                .orElseThrow(()  -> new RuntimeException("参数错误，没有获取到用户输入的信息"));
 
-        TokenStream chatResponse = streamingChatAssistant.chat(userInput);
+        saveDb(threadId,runId,agentMessage);
 
-        AGUITemplate template = new AGUITemplate();
+        InvocationParameters parameters = new InvocationParameters();
+        parameters.put("threadId", threadId);
+        parameters.put("runId", runId);
+        parameters.put("textId", textId);
+        parameters.put("thinkingId", thinkId);
 
-        return template.chat(runId, threadId, chatResponse);
-    }
+        TokenStream chatResponse = streamingChatAssistant.chat(agentMessage.getContent(), parameters);
 
-
-    private String generateResponse(String userInput) {
-        // 这里可以替换为真实的 AI 模型调用
-        return "你好！你问的是：「" + userInput + "」\n\n" +
-                "这是一个通过 AG-UI 协议流式返回的回复。\n" +
-                "AG-UI 支持文本、推理过程、工具调用等多种事件类型。";
+        return  new AGUITemplate().chat(runId, threadId, chatResponse, textId, thinkId);
     }
 
 

@@ -1,20 +1,32 @@
 package com.xbx.study.ai.config;
 
+import com.xbx.study.ai.listener.ResponseSaveListener;
+import com.xbx.study.ai.mapper.AiMessageMapper;
 import com.xbx.study.ai.service.model.QwenChatAssistant;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
+import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
 import dev.langchain4j.model.language.StreamingLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
+import dev.langchain4j.observability.api.event.AiServiceCompletedEvent;
+import dev.langchain4j.observability.api.listener.AiServiceCompletedListener;
 import dev.langchain4j.service.AiServices;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
+
 
 @Configuration
 public class ModelConfig {
+
+
+    @Autowired
+    private ResponseSaveListener listener;
 
     /**
      * 定义 deepseek chat model
@@ -73,9 +85,9 @@ public class ModelConfig {
         return OpenAiStreamingChatModel.builder()
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
                 .apiKey(System.getenv("java_qwen_apikey"))
-                .modelName("qwen3-vl-235b-a22b-thinking")
-                .logRequests(true)
-                .logResponses(true)
+                .modelName("qwen3.7-max-2026-05-20")
+                //.logRequests(true)
+                //.logResponses(true)
                 .returnThinking(true)  // 关键：启用 reasoning_content → onPartialThinking 的路由
                 .build();
     }
@@ -86,6 +98,7 @@ public class ModelConfig {
     public QwenChatAssistant streamingChatAssistant(@Qualifier("qwen3") StreamingChatModel streamingChatModel){
         return AiServices.builder(QwenChatAssistant.class)
                 .streamingChatModel(streamingChatModel)
+                .registerListener(listener)
                 .build();
     }
 
