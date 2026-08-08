@@ -10,7 +10,7 @@ import java.util.List;
 public interface AiThreadMapper {
 
 
-    @Select("SELECT * FROM ai_thread")
+    @Select("SELECT * FROM ai_thread ORDER BY last_run_at DESC")
     List<AiThreadPo> selectAll();
 
 

@@ -34,9 +34,13 @@ public class AgentService {
     private static final String VALUE_STATUS_PROCESSING = "processing";
     private static final String VALUE_STATUS_COMPLETED = "completed";
 
+    private static final Integer PAGE_SIZE = 5;
+
     private final QwenChatAssistant streamingChatAssistant;
     private final AiThreadMapper aiThreadMapper;
     private final AiMessageMapper aiMessageMapper;
+
+
 
     public AgentService(QwenChatAssistant streamingChatAssistant, AiThreadMapper aiThreadMapper, AiMessageMapper aiMessageMapper) {
         this.streamingChatAssistant = streamingChatAssistant;
@@ -49,8 +53,8 @@ public class AgentService {
 
     @Transactional
     public PageInfo<AiThreadPo> threadList(Integer pageNum){
-        pageNum = pageNum != null ? pageNum : 1;
-        PageHelper.startPage(pageNum,2);
+        //pageNum = pageNum != null ? pageNum : 1;
+        PageHelper.startPage(pageNum,PAGE_SIZE);
         List<AiThreadPo> aiThreadPos = aiThreadMapper.selectAll();
         return new PageInfo<>(aiThreadPos);
     }

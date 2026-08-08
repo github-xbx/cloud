@@ -66,7 +66,7 @@ public class AGUIProtocol extends AGUIResultBase implements Consumer<FluxSink<AG
                     TokenUsage tokenUsage = chatResponse.metadata().tokenUsage();
                     logger.info("token 用量, 输入 token = [{}], 输出 token = [{}], 总 token = [{}]",tokenUsage.inputTokenCount(),tokenUsage.outputTokenCount(),tokenUsage.totalTokenCount());
                     AiMessage aiMessage = chatResponse.aiMessage();
-                    logger.info("response text = [{}], thinking => [{}], tool => [{}], attributes => [{}]",aiMessage.text(),aiMessage.thinking(),aiMessage.toolExecutionRequests(),aiMessage.attributes());
+                    //logger.info("response text = [{}], thinking => [{}], tool => [{}], attributes => [{}]",aiMessage.text(),aiMessage.thinking(),aiMessage.toolExecutionRequests(),aiMessage.attributes());
                 })
                 .onError(throwable -> {
                     EVENT_RUN_ERROR = new RunErrorEvent(getRunId(),getThreadId(),throwable.getMessage());
