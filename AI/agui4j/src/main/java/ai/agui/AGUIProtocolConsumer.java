@@ -12,13 +12,12 @@ import reactor.core.publisher.FluxSink;
 
 
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-public class AGUIProtocol extends AGUIResultBase implements Consumer<FluxSink<AGUIEvent>> {
+public class AGUIProtocolConsumer extends AGUIResultBase implements Consumer<FluxSink<AGUIEvent>> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AGUIProtocol.class);
+    private static final Logger logger = LoggerFactory.getLogger(AGUIProtocolConsumer.class);
 
     private final TokenStream tokenStream;
     private final AGUIEvent EVENT_RUN_STARTED;
@@ -27,7 +26,7 @@ public class AGUIProtocol extends AGUIResultBase implements Consumer<FluxSink<AG
     private final String textMessageId;
     private final String reasoningMessageId;
 
-    public AGUIProtocol(String runId, String threadId, TokenStream tokenStream, String textMessageId, String reasoningMessageId) {
+    public AGUIProtocolConsumer(String runId, String threadId, TokenStream tokenStream, String textMessageId, String reasoningMessageId) {
         super(runId, threadId);
         this.tokenStream = tokenStream;
         this.textMessageId = textMessageId;
