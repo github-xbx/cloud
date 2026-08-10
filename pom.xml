@@ -32,9 +32,7 @@
         <module>basic_lock</module>
         <module>_test</module>
         <module>GRPC</module>
-        <module>cloud_dubbo_1</module>
 
-        <module>cloud_dubbo_0</module>
         <module>cloud_admin</module>
         <module>DS</module>
 
