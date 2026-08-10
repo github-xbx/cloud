@@ -22,7 +22,9 @@
     <modules>
         <module>AI</module>
         <module>DB</module>
+        <module>DS</module>
         <module>RPC</module>
+        <module>GRPC</module>
         <module>device</module>
 
         <module>common</module>
@@ -31,10 +33,10 @@
         <module>network_netty</module>
         <module>basic_lock</module>
         <module>_test</module>
-        <module>GRPC</module>
 
-        <module>cloud_admin</module>
-        <module>DS</module>
+
+
+
 
 
     </modules>

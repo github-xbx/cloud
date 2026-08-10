@@ -10,9 +10,10 @@
     <groupId>com.ds</groupId>
     <artifactId>DS</artifactId>
     <packaging>pom</packaging>
-    <name>Distributed System Maven</name>
+    <name>Distributed System</name>
 
     <modules>
+        <module>cloud_admin</module>
         <module>cloud_common</module>
         <module>cloud_dubbo_1</module>
         <module>cloud_dubbo_0</module>

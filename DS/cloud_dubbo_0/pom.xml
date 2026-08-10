@@ -8,7 +8,7 @@
     </parent>
     <groupId>com.ds.dubbo</groupId>
     <artifactId>cloud_dubbo_0</artifactId>
-    <name>cloud_dubbo</name>
+    <name>cloud_dubbo_0</name>
 
     <dependencies>
 
