@@ -14,6 +14,7 @@
 
     <modules>
         <module>cloud_gateway</module>
+        <module>cloud_web</module>
     </modules>
 
     <dependencyManagement>
