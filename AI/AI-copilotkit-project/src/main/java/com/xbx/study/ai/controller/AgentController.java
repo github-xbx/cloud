@@ -1,6 +1,6 @@
 package com.xbx.study.ai.controller;
 
-import ai.agui.event.AGUIEvent;
+import ai.agui.event.*;
 import com.github.pagehelper.PageInfo;
 import com.xbx.study.ai.entity.dto.AgentThread;
 import com.xbx.study.ai.entity.dto.RunAgentInput;
@@ -161,13 +161,7 @@ public class AgentController {
         String runId = input.getRunId();
         String threadId = input.getThreadId();
 
-        return Flux.just(
-//                new RunStartedEvent(runId, threadId),
-//                new TextMessageStartEvent("123","assistant"),
-//                new TextMessageContentEvent("123","你好！有什么可以帮助你的？"),
-//                new TextMessageEndEvent("123"),
-//                new RunFinishedEvent(runId, threadId)
-        );
+        return agentService.historyMessages(threadId);
     }
 
 }

@@ -71,7 +71,7 @@ public class AgentService {
         List<AiMessagePo> list = this.aiMessageMapper.selectByThreadId(threadId);
 
         Map<String, List<OriginalMessage>> map = list.stream().map(msg -> {
-            return new OriginalMessage(msg.getRole(), msg.getContent(), msg.getRunId(), msg.getThreadId(), msg.getMessageId());
+            return new OriginalMessage(msg.getRole(), msg.getContent(), msg.getRunId(), msg.getThreadId(), msg.getMessageId(), msg.getCreateAt());
         }).collect(Collectors.groupingBy(OriginalMessage::runId));
 
         return new AGUITemplate().stream(map);

@@ -35,7 +35,7 @@ public interface AiMessageMapper {
     /**
      * 根据 threadId 查询历史消息
      */
-    @Select("SELECT * FROM ai_message where thread_id = #{threadId}")
+    @Select("SELECT * FROM ai_message where thread_id = #{threadId} ORDER BY create_at ")
     List<AiMessagePo> selectByThreadId(@Param("threadId") String threadId);
 
 
