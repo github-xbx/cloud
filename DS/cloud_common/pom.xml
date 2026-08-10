@@ -2,10 +2,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.xbx.study</groupId>
-        <artifactId>cloud</artifactId>
+        <groupId>com.ds</groupId>
+        <artifactId>DS</artifactId>
         <version>1.0</version>
     </parent>
+    <groupId>com.ds.cloud_common</groupId>
     <artifactId>cloud_common</artifactId>
     <name>cloud_common</name>
 
@@ -67,8 +68,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <protoSourceDir>${basedir}/src/main/proto</protoSourceDir>
-                    <outputDir>${project.build.directory}/generated-sources/protobuf/java</outputDir>
+                    <protoSourceDir>src/main/proto</protoSourceDir>
+                    <outputDir>target/generated-sources/protobuf/java</outputDir>
                     <dubboGenerateType>tri</dubboGenerateType>
                 </configuration>
             </plugin>
@@ -82,7 +83,7 @@
                     <protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>grpc-java</pluginId>
                     <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
-                    <outputDirectory>${project.build.directory}/generated-sources/protobuf/java</outputDirectory>
+                    <outputDirectory>target/generated-sources/protobuf/java</outputDirectory>
                     <clearOutputDirectory>false</clearOutputDirectory>   <!-- ★ 不清空，保留 dubbo 插件已生成的文件 -->
                 </configuration>
                 <executions>

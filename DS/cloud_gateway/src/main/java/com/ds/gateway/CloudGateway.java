@@ -1,4 +1,4 @@
-package com.xbx.study.gateway;
+package com.ds.gateway;
 
 
 import org.springframework.boot.SpringApplication;

@@ -1,6 +1,7 @@
 package com.xbx.study.ai.service;
 
 import ai.agui.AGUITemplate;
+import ai.agui.common.OriginalMessage;
 import ai.agui.event.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -21,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -57,6 +60,21 @@ public class AgentService {
         PageHelper.startPage(pageNum,PAGE_SIZE);
         List<AiThreadPo> aiThreadPos = aiThreadMapper.selectAll();
         return new PageInfo<>(aiThreadPos);
+    }
+
+
+    @Transactional(readOnly = true)
+    public Flux<AGUIEvent> historyMessages(String threadId){
+        if (threadId == null || threadId.isEmpty()){
+            return Flux.empty();
+        }
+        List<AiMessagePo> list = this.aiMessageMapper.selectByThreadId(threadId);
+
+        Map<String, List<OriginalMessage>> map = list.stream().map(msg -> {
+            return new OriginalMessage(msg.getRole(), msg.getContent(), msg.getRunId(), msg.getThreadId(), msg.getMessageId(), msg.getCreateAt());
+        }).collect(Collectors.groupingBy(OriginalMessage::runId));
+
+        return new AGUITemplate().stream(map);
     }
 
 

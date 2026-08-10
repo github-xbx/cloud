@@ -22,20 +22,19 @@
     <modules>
         <module>AI</module>
         <module>DB</module>
+        <module>DS</module>
         <module>RPC</module>
+        <module>GRPC</module>
         <module>device</module>
 
         <module>common</module>
-        <module>cloud_gateway</module>
-        <module>cloud_web</module>
+
+
         <module>network_netty</module>
         <module>basic_lock</module>
         <module>_test</module>
-        <module>GRPC</module>
-        <module>cloud_dubbo_1</module>
-        <module>cloud_common</module>
-        <module>cloud_dubbo_0</module>
-        <module>cloud_admin</module>
+
+
 
 
 
