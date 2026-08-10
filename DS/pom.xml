@@ -13,6 +13,7 @@
     <name>Distributed System Maven</name>
 
     <modules>
+        <module>cloud_common</module>
         <module>cloud_gateway</module>
         <module>cloud_web</module>
     </modules>
