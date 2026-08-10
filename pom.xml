@@ -26,7 +26,7 @@
         <module>device</module>
 
         <module>common</module>
-        <module>cloud_gateway</module>
+
         <module>cloud_web</module>
         <module>network_netty</module>
         <module>basic_lock</module>
@@ -36,8 +36,7 @@
         <module>cloud_common</module>
         <module>cloud_dubbo_0</module>
         <module>cloud_admin</module>
-
-
+        <module>DS</module>
 
 
     </modules>
