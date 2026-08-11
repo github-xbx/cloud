@@ -9,6 +9,7 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class JobService  {
     private final JobMapper jobMapper;
 
     @Autowired
-    public JobService(Scheduler scheduler, JobMapper jobMapper) {
+    public JobService( Scheduler scheduler, JobMapper jobMapper) {
         this.scheduler = scheduler;
         this.jobMapper = jobMapper;
     }

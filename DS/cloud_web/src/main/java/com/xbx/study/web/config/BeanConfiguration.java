@@ -1,14 +1,17 @@
 package com.xbx.study.web.config;
 
 import org.quartz.Scheduler;
+import org.quartz.SchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
 import java.io.IOException;
 
@@ -27,12 +30,13 @@ public class BeanConfiguration {
     }
 
 
-    @Bean(destroyMethod = "shutdown")
-    public Scheduler scheduler() throws Exception {
-        StdSchedulerFactory factory = new StdSchedulerFactory();
-        Scheduler scheduler = factory.getScheduler();
-        scheduler.start();
-        return scheduler;
+    @Bean
+    public SchedulerFactoryBean schedulerFactoryBean(){
+
+        SchedulerFactoryBean factory = new SchedulerFactoryBean();
+        factory.setConfigLocation(new ClassPathResource("quartz.properties"));
+        return factory;
+
     }
 
 

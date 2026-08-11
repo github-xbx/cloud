@@ -6,9 +6,9 @@
         <artifactId>DS</artifactId>
         <version>1.0</version>
     </parent>
+
     <groupId>com.ds.admin</groupId>
     <artifactId>cloud_admin</artifactId>
-
     <name>cloud_admin</name>
 
     <dependencies>

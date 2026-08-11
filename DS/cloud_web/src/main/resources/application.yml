@@ -16,6 +16,18 @@ spring:
       initial-size: 5
       max-active: 20
       min-idle: 5
+  data:
+    redis:
+      cluster:
+        nodes:
+          - 127.0.0.1:6379
+          - 127.0.0.1:6378
+          - 127.0.0.1:6388
+          - 127.0.0.1:6389
+          - 127.0.0.1:6398
+          - 127.0.0.1:6399
+      database: 1
+      timeout: 10s
 
 mybatis:
   mapper-locations: classpath*:mapper/*.xml
