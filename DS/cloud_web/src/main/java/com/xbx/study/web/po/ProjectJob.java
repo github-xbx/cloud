@@ -1,9 +1,14 @@
 package com.xbx.study.web.po;
 
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Date;
 
-public class ProjectJob {
+public class ProjectJob implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private Long jobId;
 

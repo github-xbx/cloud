@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 
 
@@ -31,10 +32,11 @@ public class BeanConfiguration {
 
 
     @Bean
-    public SchedulerFactoryBean schedulerFactoryBean(){
+    public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource){
 
         SchedulerFactoryBean factory = new SchedulerFactoryBean();
         factory.setConfigLocation(new ClassPathResource("quartz.properties"));
+        factory.setDataSource(dataSource);
         return factory;
 
     }
