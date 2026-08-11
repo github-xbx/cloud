@@ -60,6 +60,14 @@ public class AgentController {
     }
 
 
+    @DeleteMapping("threads/{threadId}")
+    public void threadDelete(@PathVariable(value = "threadId") String threadId){
+
+        agentService.deleteThreadInfo(threadId);
+
+    }
+
+
     /**
      * {
      *     "threads": [
