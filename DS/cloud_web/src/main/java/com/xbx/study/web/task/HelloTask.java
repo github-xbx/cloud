@@ -1,5 +1,6 @@
 package com.xbx.study.web.task;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
@@ -10,15 +11,17 @@ import java.time.LocalDateTime;
 public class HelloTask {
 
 
+    @Value("${server.port}")
+    private Integer port;
 
 
 
     public void hello(){
-        System.out.println("hello"+  LocalDateTime.now());
+        System.out.println("application port => "+port+" time=>"+  LocalDateTime.now());
     }
 
-    public void hello2(String name, Integer status){
-
+    public void hello2(){
+        System.out.println("spring application port => "+port+" time=>"+  LocalDateTime.now());
     }
 
 }

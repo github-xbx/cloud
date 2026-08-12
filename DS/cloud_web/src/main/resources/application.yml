@@ -17,6 +17,7 @@ spring:
       initial-size: 5
       max-active: 20
       min-idle: 5
+    type: com.alibaba.druid.pool.DruidDataSource
   data:
     redis:
       cluster:
