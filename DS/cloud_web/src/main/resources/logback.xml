@@ -6,7 +6,7 @@
 
     <contextName>logback</contextName>
     <!-- name 的值是变量的名称，value 的值是变量定义的值。定义变量后，可以用 "${}" 来使用变量。 -->
-    <property name="log.path" value="logs/cloud_web"/>
+    <property name="log.path" value="./logs/cloud_web"/>
 
     <!-- 彩色日志 -->
     <!-- 彩色日志依赖的渲染类 -->
