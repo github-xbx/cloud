@@ -77,10 +77,10 @@ public class LuaScript {
     public String redisLockText(){
 
         return """
-                local key = KEY[1]
+                local key = KEYS[1]
                 local value = ARGV[1]
                 local time = tonumber(ARGV[2])
-                local lock = redis.call('set',key,value,'nx','px,time)
+                local lock = redis.call('set',key,value,'nx','px',time)
                 if lock == 'OK' then
                     return 1
                 end
