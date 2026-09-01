@@ -1,0 +1,8 @@
+# standalone-mysql 模块内置默认数据源配置
+# 消费者零配置时使用以下默认值；如需覆盖，在自身 application.yml 中配 standalone.mysql.* 或 spring.datasource.* 即可
+standalone:
+  mysql:
+    url: 'jdbc:mysql://localhost:3306/demo?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowMultiQueries=true'
+    username: root
+    password: mysql
+    driver-class-name: com.mysql.cj.jdbc.Driver
