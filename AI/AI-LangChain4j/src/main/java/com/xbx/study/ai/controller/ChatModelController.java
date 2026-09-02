@@ -122,6 +122,8 @@ public class ChatModelController {
     @Resource
     private ChatSearchWebAssistant chatSearchWebAssistant;
 
+    @Resource
+    private CodeAssistant codeAssistant;
 
 
 
@@ -638,6 +640,13 @@ public class ChatModelController {
         String question = "今日上海曹安菜篮子股份有限公司的蔬菜价格是多少";
         String chat = chatSearchWebAssistant.chat(question);
         return chat;
+    }
+
+
+    @GetMapping("mcp/code-review")
+    public Flux<String> mcpCodeReview(){
+        String question = "审查一下 E:\\code\\cloud\\DB\\standalone-mysql 目录中的代码";
+        return codeAssistant.codeReview(question);
     }
 
 }

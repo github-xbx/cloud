@@ -1,6 +1,7 @@
 package com.xbx.study.ai.config;
 
 import com.xbx.study.ai.listener.DeepseekChatModelListener;
+import com.xbx.study.ai.mcp.LocalMcpService;
 import com.xbx.study.ai.service.ChatMemoryAssistant;
 import com.xbx.study.ai.service.FunctionAssistant;
 import com.xbx.study.ai.service.LawAssistant;
@@ -9,6 +10,7 @@ import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.community.model.dashscope.WanxImageModel;
 import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.mcp.McpToolProvider;
 import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
@@ -35,6 +37,7 @@ import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 import dev.langchain4j.store.memory.chat.InMemoryChatMemoryStore;
 import io.qdrant.client.QdrantClient;
 import io.qdrant.client.QdrantGrpcClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +47,11 @@ import java.util.Map;
 
 @Configuration
 public class LLMConfiguration {
+
+
+
+    @Autowired
+    private LocalMcpService localMcpService;
 
 
     /**
@@ -70,7 +78,7 @@ public class LLMConfiguration {
         return OpenAiChatModel.builder()
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
                 .apiKey(System.getenv("java_qwen_apikey"))
-                .modelName("qwen3.7-max-2026-05-20")
+                .modelName("qwen3.7-max-2026-06-08")
                 //.httpClientBuilder(new SpringRestClientBuilder())
                 .build();
     }
@@ -79,9 +87,9 @@ public class LLMConfiguration {
         return OpenAiStreamingChatModel.builder()
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
                 .apiKey(System.getenv("java_qwen_apikey"))
-                .modelName("qwen3.7-max-2026-05-20")
-                .logRequests(true)
-                .logResponses(true)
+                .modelName("qwen3.7-max-2026-06-08")
+                //.logRequests(true)
+                //.logResponses(true)
                 .build();
     }
 
@@ -327,6 +335,13 @@ public class LLMConfiguration {
                 .build();
     }
 
+
+
+    @Bean(name = "mcpCodeReviewToolProvider")
+    public ToolProvider mcpCodeReviewToolProvider(){
+        // 3. 创建工具提供者
+        return McpToolProvider.builder().mcpClients(localMcpService.codeReviewClient()).build();
+    }
 
 
 
