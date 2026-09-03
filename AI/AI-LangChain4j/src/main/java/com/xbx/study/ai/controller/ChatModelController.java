@@ -80,8 +80,7 @@ public class ChatModelController {
     @Resource(name = "qwen")
     private ChatModel qwen;
 
-    @Resource(name = "qwenImageModel")
-    private ImageModel qwenImageModel;
+
 
     @Autowired
     @Qualifier("chatMemoryMessageWindows")
@@ -188,40 +187,6 @@ public class ChatModelController {
     }
 
 
-    @GetMapping("qwen_image_create")
-    public String qwenCallIImageCreate() throws IOException {
-
-        Response<Image> response = qwenImageModel.generate("美女");
-
-
-        logger.info("qwenImageModel result => {}",response.content().url());
-
-        return response.content().url().toString();
-
-    }
-    @GetMapping("qwen_image_create_1")
-    public String qwenCallIImageCreate1() {
-        String prompt = "近景镜头，18岁的中国女孩，古代服饰，圆脸，正面看着镜头"
-                + "民族优雅的服饰，商业摄影，室外，电影级光照，半身特写，精致的淡妆，锐利的边缘。";
-        ImageSynthesisParam param = ImageSynthesisParam.builder()
-                .apiKey(System.getenv("java_qwen_apikey"))
-                .model("wanx2.0-t2i-turbo")
-                .prompt(prompt)
-                .style(WanxImageStyle.CARTOON_3D.getStyle())
-                .n(2)
-                //.size("1920*1080")
-                .build();
-        ImageSynthesis imageSynthesis = new ImageSynthesis();
-        ImageSynthesisResult result = null;
-
-        try {
-            System.out.println("--- sync call, please wait a moment ---");
-            result = imageSynthesis.call(param);
-        } catch (NoApiKeyException e) {
-            throw new RuntimeException(e);
-        }
-        return  result.toString();
-    }
 
 
 
