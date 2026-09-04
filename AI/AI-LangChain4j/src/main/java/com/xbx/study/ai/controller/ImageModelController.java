@@ -4,7 +4,7 @@ import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesis;
 import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisParam;
 import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisResult;
 import com.alibaba.dashscope.exception.NoApiKeyException;
-import com.xbx.study.ai.service.ImageService;
+import com.xbx.study.ai.service.ImageAndVideoService;
 import dev.langchain4j.community.model.dashscope.WanxImageStyle;
 import dev.langchain4j.data.image.Image;
 import dev.langchain4j.model.image.ImageModel;
@@ -32,7 +32,7 @@ public class ImageModelController {
     private ImageModel qwenImageModel;
 
     @Resource
-    private ImageService imageService;
+    private ImageAndVideoService imageAndVideoService;
 
 
 
@@ -79,7 +79,7 @@ public class ImageModelController {
     @GetMapping("createImage")
     public ResponseEntity<org.springframework.core.io.Resource> createImage(@RequestParam("message") String message) throws Exception {
 
-        org.springframework.core.io.Resource image = imageService.createOneImage(message);
+        org.springframework.core.io.Resource image = imageAndVideoService.createOneImage(message);
 
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
     }
@@ -94,10 +94,24 @@ public class ImageModelController {
                 电影级质感画质，8K超高分辨率，超写实真人摄影风格，细腻纹理，柔和的中性光，减少强烈的阴影感，使皮肤看起来更柔和。
                 """;
         }
-        org.springframework.core.io.Resource image = imageService.createOneImage(message);
+        org.springframework.core.io.Resource image = imageAndVideoService.createOneImage(message);
 
         return "success";
     }
 
+    @GetMapping("createVideo")
+    public String createVideo(@RequestParam("message") String message) throws Exception {
+        if (StringUtils.isEmpty(message)) {
+            message = """
+                    一位年轻的东亚女性，约20岁，深棕色长波浪卷发，沙漏型身材，纤细的腰，丰满的胸部，修长的双腿，白皙光滑的皮肤。
+                    身穿紧身漏胸短袖T恤，搭配包臀超短裙子，腿上穿着肉色丝袜，配着高跟鞋。
+                    全身照片，从上道下整个人站在中间，面对镜头，跳热舞。
+                    电影级质感画质，8K超高分辨率，超写实真人摄影风格，细腻纹理，柔和的中性光，减少强烈的阴影感，使皮肤看起来更柔和。
+                    """;
+        }
+
+        String videoTask = imageAndVideoService.videoGenerate(message);
+        return videoTask;
+    }
 
 }

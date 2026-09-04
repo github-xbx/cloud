@@ -19,6 +19,13 @@ import java.util.List;
 @Configuration
 public class ModelConfiguration {
 
+
+    private final ModelProperties modelProperties;
+
+    public ModelConfiguration(ModelProperties modelProperties) {
+        this.modelProperties = modelProperties;
+    }
+
     /**
      * 定义 deepseek chat model
      * @return DeepSeek ChatModel
@@ -28,7 +35,7 @@ public class ModelConfiguration {
         return OpenAiChatModel.builder()
                 .baseUrl("https://api.deepseek.com")
                 .apiKey(System.getenv("java_deepseek_apikey"))
-                .modelName("deepseek-v4-pro")
+                .modelName(modelProperties.getDeepseek().getChat())
                 //.httpClientBuilder(new SpringRestClientBuilder())
                 .logRequests(true)  //日志级别设置为debug才有效
                 .listeners(List.of(new DeepseekChatModelListener())) //配置监听器,可以配置多个
@@ -43,7 +50,7 @@ public class ModelConfiguration {
         return OpenAiChatModel.builder()
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
                 .apiKey(System.getenv("java_qwen_apikey"))
-                .modelName("qwen3.7-max-2026-06-08")
+                .modelName(modelProperties.getQwen().getChat())
                 //.httpClientBuilder(new SpringRestClientBuilder())
                 .build();
     }
@@ -52,7 +59,7 @@ public class ModelConfiguration {
         return OpenAiStreamingChatModel.builder()
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
                 .apiKey(System.getenv("java_qwen_apikey"))
-                .modelName("qwen3.7-max-2026-06-08")
+                .modelName(modelProperties.getQwen().getChat())
                 //.logRequests(true)
                 //.logResponses(true)
                 .build();
@@ -64,7 +71,7 @@ public class ModelConfiguration {
         return WanxImageModel.builder()
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/api/v1" )
                 .apiKey(System.getenv("java_qwen_apikey"))
-                .modelName("qwen-image-2.0-pro-2026-06-22")
+                .modelName(modelProperties.getQwen().getImage())
                 //.modelName("wan2.7-t2v-2026-06-12")
                 //.logRequests(true)
 
@@ -83,7 +90,7 @@ public class ModelConfiguration {
     public EmbeddingModel embeddingModel(){
         return OpenAiEmbeddingModel.builder()
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
-                .modelName("qwen3.7-text-embedding")
+                .modelName(modelProperties.getQwen().getEmbedding())
                 .apiKey(System.getenv("java_qwen_apikey"))
                 .logRequests(true)
                 .logResponses(true)

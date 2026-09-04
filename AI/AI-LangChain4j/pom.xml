@@ -60,6 +60,13 @@
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-community-dashscope</artifactId>
         </dependency>
+        <!-- 阿里云 dashscope sdk -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dashscope-sdk-java</artifactId>
+            <version>2.22.30</version>
+        </dependency>
+
 
         <!-- 流式输出 -->
         <dependency>

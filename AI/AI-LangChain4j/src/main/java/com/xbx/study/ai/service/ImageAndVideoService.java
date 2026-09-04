@@ -1,19 +1,20 @@
 package com.xbx.study.ai.service;
 
 
-import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesis;
 import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisParam;
-import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisResult;
 import com.alibaba.dashscope.aigc.multimodalconversation.MultiModalConversation;
 import com.alibaba.dashscope.aigc.multimodalconversation.MultiModalConversationParam;
 import com.alibaba.dashscope.aigc.multimodalconversation.MultiModalConversationResult;
+import com.alibaba.dashscope.aigc.videosynthesis.VideoSynthesis;
+import com.alibaba.dashscope.aigc.videosynthesis.VideoSynthesisParam;
+import com.alibaba.dashscope.aigc.videosynthesis.VideoSynthesisResult;
 import com.alibaba.dashscope.common.MultiModalMessage;
 import com.alibaba.dashscope.common.Role;
+import com.alibaba.dashscope.exception.InputRequiredException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import com.alibaba.dashscope.utils.Constants;
-import dev.langchain4j.data.image.Image;
+import com.xbx.study.ai.config.ModelProperties;
 import dev.langchain4j.model.image.ImageModel;
-import dev.langchain4j.model.output.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,7 +22,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -29,38 +29,62 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.*;
 
 @Service
-public class ImageService {
+public class ImageAndVideoService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ImageService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImageAndVideoService.class);
 
     private final ImageModel imageModel;
+    private final ModelProperties modelProperties;
 
 
-
-    public ImageService(
-            @Qualifier("qwenImageModel") ImageModel imageModel) {
+    public ImageAndVideoService(
+            @Qualifier("qwenImageModel") ImageModel imageModel,
+            ModelProperties modelProperties) {
         this.imageModel = imageModel;
 
+        this.modelProperties = modelProperties;
     }
 
 
-    private ImageSynthesisParam imageParam(String prompt){
+    public String videoGenerate(String prompt) throws NoApiKeyException, InputRequiredException {
+
+        VideoSynthesisParam param = VideoSynthesisParam.builder()
+                .apiKey(System.getenv("java_qwen_apikey"))
+                .model(modelProperties.getQwen().getVideo())
+                .prompt(prompt)
+                .size("1920*1080")
+                .watermark(false)
+                //.referenceUrl()
+                .build();
+
         //在创建 ImageSynthesis 客户端之前，设置全局的base URL
         Constants.baseHttpApiUrl = "https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/api/v1";
 
-        return ImageSynthesisParam.builder()
-                .model("qwen-image-2.0-pro-2026-06-22")
-                .apiKey(System.getenv("java_qwen_apikey"))
-                .prompt(prompt)
-                .n(1)
-                .size("1920*1080")
-                .build();
+        VideoSynthesis videoSynthesis = new VideoSynthesis();
+        VideoSynthesisResult task = videoSynthesis.asyncCall(param);
 
+        new Thread(() -> {
+            try {
+                VideoSynthesisResult result = videoSynthesis.wait(task, System.getenv("java_qwen_apikey"));
+                if (result.getOutput() != null && result.getOutput().getVideoUrl() != null) {
+                    String videoUrl = result.getOutput().getVideoUrl();
+                    System.out.println("视频生成成功！URL: " + videoUrl);
+
+                } else {
+                    throw new RuntimeException("视频生成失败: " + result);
+                }
+
+            } catch (NoApiKeyException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+
+        //异步 返回task ID
+        return task.getOutput().getTaskId();
     }
 
     private void downloadImage(String imageUrl, String destinationFile) throws Exception {
@@ -111,7 +135,7 @@ public class ImageService {
         // 3. 构建请求参数
         MultiModalConversationParam param = MultiModalConversationParam.builder()
                 .apiKey(System.getenv("java_qwen_apikey"))
-                .model("qwen-image-2.0-pro-2026-06-22") // 使用你的模型名
+                .model(modelProperties.getQwen().getImage()) // 使用你的模型名
                 .messages(Collections.singletonList(userMessage))
                 .parameters(parameters)
                 .build();
