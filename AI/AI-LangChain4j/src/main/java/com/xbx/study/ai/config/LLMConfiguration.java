@@ -22,6 +22,8 @@ import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.tool.ToolExecutor;
 import dev.langchain4j.service.tool.ToolProvider;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.store.embedding.chroma.ChromaApiVersion;
+import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 import dev.langchain4j.store.embedding.qdrant.QdrantEmbeddingStore;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
@@ -44,36 +46,6 @@ public class LLMConfiguration {
     private LocalMcpService localMcpService;
 
 
-
-
-
-    @Bean
-    public QdrantClient qdrantClient(){
-        QdrantGrpcClient.Builder grpcClientBuilder = QdrantGrpcClient.newBuilder("120.48.1.247", 6334, false);
-        return new QdrantClient(grpcClientBuilder.build());
-    }
-
-    /**
-     * 基于 Qdrant的嵌入存储（适量数据库） Bean
-     * @return
-     */
-    @Bean(name = "embeddingStore")
-    public EmbeddingStore<TextSegment> embeddingStore(){
-        return QdrantEmbeddingStore.builder()
-                .host("120.48.1.247")
-                .port(6334)
-                .collectionName("test-qdrant")
-                .build();
-    }
-
-    /**
-     * 基于内存的 嵌入存储（矢量数据库） Bean
-     * @return
-     */
-    @Bean(name = "inMemoryEmbeddingStore")
-    public EmbeddingStore<TextSegment> inMemoryEmbeddingStore(){
-        return new InMemoryEmbeddingStore<>();
-    }
 
 
     /**
