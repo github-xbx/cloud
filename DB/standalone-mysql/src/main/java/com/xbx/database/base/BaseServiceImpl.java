@@ -8,6 +8,5 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
  * @param <M> Mapper 类型（须继承 {@link BaseMapper}）
  * @param <T> 实体类型
  */
-public abstract class BaseServiceImpl<M extends BaseMapper<T>, T>
-        extends ServiceImpl<M, T> implements IBaseService<T> {
+public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, T> implements IBaseService<T> {
 }

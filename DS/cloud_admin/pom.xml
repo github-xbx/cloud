@@ -17,11 +17,13 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+
         <dependency>
-            <groupId>de.codecentric</groupId>
-            <artifactId>spring-boot-admin-starter-server</artifactId>
-            <version>3.5.9</version>
+            <groupId>com.xbx.database</groupId>
+            <artifactId>standalone-mysql</artifactId>
+            <version>1.0</version>
         </dependency>
+
 
     </dependencies>
 
