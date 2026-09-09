@@ -92,6 +92,7 @@ public class ModelConfiguration {
                 .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
                 .modelName(modelProperties.getQwen().getEmbedding())
                 .apiKey(System.getenv("java_qwen_apikey"))
+                .maxSegmentsPerBatch(20)
                 .logRequests(true)
                 .logResponses(true)
                 .build();

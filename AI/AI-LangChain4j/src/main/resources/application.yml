@@ -24,6 +24,7 @@ langchain4j:
 # 只有日志级别调整为debug级别，同时配置以上 langchain 日志输出开关才有效
 logging:
   level:
+    com.xbx.study.ai: DEBUG
     dev:
       langchain4j: DEBUG
 
