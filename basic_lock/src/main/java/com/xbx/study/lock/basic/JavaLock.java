@@ -15,6 +15,7 @@ public class JavaLock extends AbstractQueuedSynchronizer implements Lock {
     public void lock() {
         //获取锁
         acquire(1);
+        System.out.println("lock() 获取锁。");
     }
 
     @Override
@@ -23,11 +24,16 @@ public class JavaLock extends AbstractQueuedSynchronizer implements Lock {
     }
 
     /**
-     * 立刻获取锁，成功获取锁返回 true，没有回去到锁 返回false
+     * 立刻获取锁，成功获取锁返回 true，没有获取到锁 返回false
      * @return true 获取锁成功 false 获取锁失败
      */
     @Override
     public boolean tryLock() {
+        //加锁
+        int state = getState();
+        if (state == 0){
+            return tryAcquire(1);
+        }
         return false;
     }
 
@@ -56,6 +62,7 @@ public class JavaLock extends AbstractQueuedSynchronizer implements Lock {
      *        passed to a release method, or the current state value upon
      *        entry to a condition wait.  The value is otherwise
      *        uninterpreted and can represent anything you like.
+     *        释放参数。此值始终是传递给释放方法的值，或在进入条件等待时的当前状态值。否则，该值未被解释，可以表示任何您喜欢的值。
      * @return  true
      */
     @Override
@@ -72,17 +79,25 @@ public class JavaLock extends AbstractQueuedSynchronizer implements Lock {
         return true;
     }
 
-    @Override
-    protected boolean tryAcquire(int arg) {
+    /**
+     * 加锁核心逻辑
+     * @param arg the acquire argument. This value is always the one
+     *        passed to an acquire method, or is the value saved on entry
+     *        to a condition wait.  The value is otherwise uninterpreted
+     *        and can represent anything you like.
+     * @return
+     */
+        @Override
+        protected boolean tryAcquire(int arg) {
 
-        //CAS 尝试获取锁
-        if (compareAndSetState(0,arg)){
-            //独占农事下 设置锁的持有者为当前线程，来自AQS
-            setExclusiveOwnerThread(Thread.currentThread());
-            System.out.println(Thread.currentThread().getName() + ", 获取锁成功");
-            return true;
+            //CAS 尝试获取锁
+            if (compareAndSetState(0,arg)){
+                //独占模式下 设置锁的持有者为当前线程，来自AQS
+                setExclusiveOwnerThread(Thread.currentThread());
+                System.out.println("[success] "+Thread.currentThread().getName() + ", 获取锁成功");
+                return true;
+            }
+            System.out.println("[error] "+Thread.currentThread().getName() + ", 获取锁失败");
+            return false;
         }
-        System.out.println(Thread.currentThread().getName() + ", 获取锁失败");
-        return false;
-    }
 }

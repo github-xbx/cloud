@@ -7,6 +7,7 @@ import com.xbx.study.web.utils.spring.ContextHolder;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.*;
+import org.quartz.impl.jdbcjobstore.StdRowLockSemaphore;
 
 import java.text.ParseException;
 import java.util.Date;
