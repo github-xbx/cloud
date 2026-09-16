@@ -25,5 +25,16 @@ public interface AiThreadMapper {
     @Update("UPDATE ai_thread SET update_at = #{time}, last_run_at = #{time} WHERE thread_id = #{threadId} ")
     int updateTimeByThreadId(@Param("threadId") String threadId, @Param("time") LocalDateTime time);
 
+    @Delete(
+            {
+                "<script>",
+                "DELETE FROM ai_thread WHERE id IN ",
+                "<foreach collection='list' item='item' separator=',' open='(' close=')' >",
+                "#{item}",
+                "</foreach>",
+                "</script>"
+            }
+    )
+    int deleteByIds(@Param("list") List<Long> ids);
 
 }

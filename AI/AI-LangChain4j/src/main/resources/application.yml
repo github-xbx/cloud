@@ -24,6 +24,17 @@ langchain4j:
 # 只有日志级别调整为debug级别，同时配置以上 langchain 日志输出开关才有效
 logging:
   level:
+    com.xbx.study.ai: DEBUG
     dev:
       langchain4j: DEBUG
 
+
+
+model:
+  qwen:
+    video: happyhorse-1.1-r2v
+    image: qwen-image-2.0-pro-2026-06-22
+    chat: qwen3.7-max-2026-06-08
+    embedding: qwen3.7-text-embedding
+  deepseek:
+    chat: deepseek-v4-pro

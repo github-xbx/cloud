@@ -1,10 +1,7 @@
 package com.xbx.study.ai.mapper;
 
 import com.xbx.study.ai.entity.po.AiMessagePo;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -38,5 +35,16 @@ public interface AiMessageMapper {
     @Select("SELECT * FROM ai_message where thread_id = #{threadId} ORDER BY create_at ")
     List<AiMessagePo> selectByThreadId(@Param("threadId") String threadId);
 
+    @Delete(
+            {
+                    "<script>",
+                    "DELETE FROM ai_message WHERE id IN ",
+                    "<foreach collection='list' item='item' separator=',' open='(' close=')' >",
+                    "#{item}",
+                    "</foreach>",
+                    "</script>"
+            }
+    )
+    int deleteByIds(@Param("list") List<Long> ids);
 
 }

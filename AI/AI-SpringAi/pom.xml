@@ -2,32 +2,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.ds</groupId>
-        <artifactId>DS</artifactId>
+        <groupId>com.xbx.study</groupId>
+        <artifactId>AI</artifactId>
         <version>1.0</version>
     </parent>
-
-    <groupId>com.ds.admin</groupId>
-    <artifactId>cloud_admin</artifactId>
-    <name>cloud_admin</name>
+    <groupId>com.xbx.study.springai</groupId>
+    <artifactId>AI-SpringAi</artifactId>
+    <packaging>jar</packaging>
+    <name>AI-SpringAi</name>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
-
-        <dependency>
-            <groupId>com.xbx.database</groupId>
-            <artifactId>standalone-mysql</artifactId>
-            <version>1.0</version>
-        </dependency>
-
-
     </dependencies>
-
     <build>
-        <finalName>cloud_admin</finalName>
+        <finalName>AI-SpringAi</finalName>
     </build>
 </project>

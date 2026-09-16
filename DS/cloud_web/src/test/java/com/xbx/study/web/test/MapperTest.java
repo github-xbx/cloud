@@ -18,10 +18,10 @@ public class MapperTest {
     public void test(){
 
         ProjectJob projectJob = new ProjectJob();
-        projectJob.setJobName("hello word");
+        projectJob.setJobName("spring bean hello word");
         projectJob.setJobGroup("test");
-        projectJob.setInvokeTarget("com.xbx.study.web.task.HelloTask.hello()");
-        projectJob.setCron("0/5 * * * * ?");
+        projectJob.setInvokeTarget("helloTask.hello()");
+        projectJob.setCron("0/10 * * * * ?");
         projectJob.setPolicy(1);
         projectJob.setConcurrent(1);
         projectJob.setStatus(0);

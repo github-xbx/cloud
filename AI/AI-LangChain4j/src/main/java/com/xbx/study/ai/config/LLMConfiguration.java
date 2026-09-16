@@ -1,14 +1,12 @@
 package com.xbx.study.ai.config;
 
-import com.xbx.study.ai.listener.DeepseekChatModelListener;
-import com.xbx.study.ai.service.ChatMemoryAssistant;
-import com.xbx.study.ai.service.FunctionAssistant;
-import com.xbx.study.ai.service.LawAssistant;
-import com.xbx.study.ai.service.StreamingChatAssistant;
+import com.alibaba.dashscope.aigc.imagesynthesis.ImageSynthesisParam;
+import com.xbx.study.ai.mcp.LocalMcpService;
+import com.xbx.study.ai.service.*;
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolSpecification;
-import dev.langchain4j.community.model.dashscope.WanxImageModel;
 import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.mcp.McpToolProvider;
 import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
@@ -16,131 +14,38 @@ import dev.langchain4j.memory.chat.TokenWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.chat.request.json.JsonObjectSchema;
-import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.model.openai.OpenAiChatModel;
-import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
-import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
+import dev.langchain4j.model.image.ImageModel;
 import dev.langchain4j.model.openai.OpenAiTokenCountEstimator;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.tool.ToolExecutor;
 import dev.langchain4j.service.tool.ToolProvider;
-import dev.langchain4j.service.tool.ToolProviderRequest;
-import dev.langchain4j.service.tool.ToolProviderResult;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.store.embedding.chroma.ChromaApiVersion;
+import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 import dev.langchain4j.store.embedding.qdrant.QdrantEmbeddingStore;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 import dev.langchain4j.store.memory.chat.InMemoryChatMemoryStore;
 import io.qdrant.client.QdrantClient;
 import io.qdrant.client.QdrantGrpcClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
 import java.util.Map;
 
 @Configuration
 public class LLMConfiguration {
 
 
-    /**
-     * 定义 deepseek chat model
-     * @return DeepSeek ChatModel
-     */
-    @Bean(name = "deepseek")
-    public ChatModel deepseek(){
-        return OpenAiChatModel.builder()
-                .baseUrl("https://api.deepseek.com")
-                .apiKey(System.getenv("java_deepseek_apikey"))
-                .modelName("deepseek-v4-pro")
-                //.httpClientBuilder(new SpringRestClientBuilder())
-                .logRequests(true)  //日志级别设置为debug才有效
-                .listeners(List.of(new DeepseekChatModelListener())) //配置监听器,可以配置多个
-                .maxRetries(3) //设置重试次数
-                //.timeout(Duration.ofSeconds(10)) //设置超时时间 向大模型发送请求时，如果 指定时间内没有收到响应，该请求将被中断并报错 request time out
-                .build();
-    }
+
+    @Autowired
+    private LocalMcpService localMcpService;
 
 
-    @Bean(name = "qwen")
-    public ChatModel qwen(){
-        return OpenAiChatModel.builder()
-                .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
-                .apiKey(System.getenv("java_qwen_apikey"))
-                .modelName("qwen3.7-max-2026-05-20")
-                //.httpClientBuilder(new SpringRestClientBuilder())
-                .build();
-    }
-    @Bean(name = "qwen1")
-    public StreamingChatModel qwen1(){
-        return OpenAiStreamingChatModel.builder()
-                .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
-                .apiKey(System.getenv("java_qwen_apikey"))
-                .modelName("qwen3.7-max-2026-05-20")
-                .logRequests(true)
-                .logResponses(true)
-                .build();
-    }
-
-
-    @Bean(name = "qwenImageModel")
-    public WanxImageModel imageModel(){
-        return WanxImageModel.builder()
-                .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/api/v1" )
-                .apiKey(System.getenv("java_qwen_apikey"))
-                //.modelName("qwen-image-2.0-pro-2026-06-22")
-                .modelName("wan2.7-t2v-2026-06-12")
-                //.logRequests(true)
-
-                .build();
-    }
-
-    /**
-     * 向量模型
-     * @return
-     */
-    @Bean(name = "qwen_embedding")
-    public EmbeddingModel embeddingModel(){
-        return OpenAiEmbeddingModel.builder()
-                .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
-                .modelName("qwen3.7-text-embedding")
-                .apiKey(System.getenv("java_qwen_apikey"))
-                .logRequests(true)
-                .logResponses(true)
-                .build();
-    }
-
-
-    @Bean
-    public QdrantClient qdrantClient(){
-        QdrantGrpcClient.Builder grpcClientBuilder = QdrantGrpcClient.newBuilder("120.48.1.247", 6334, false);
-        return new QdrantClient(grpcClientBuilder.build());
-    }
-
-    /**
-     * 基于 Qdrant的嵌入存储（适量数据库） Bean
-     * @return
-     */
-    @Bean(name = "embeddingStore")
-    public EmbeddingStore<TextSegment> embeddingStore(){
-        return QdrantEmbeddingStore.builder()
-                .host("120.48.1.247")
-                .port(6334)
-                .collectionName("test-qdrant")
-                .build();
-    }
-
-    /**
-     * 基于内存的 嵌入存储（矢量数据库） Bean
-     * @return
-     */
-    @Bean(name = "inMemoryEmbeddingStore")
-    public EmbeddingStore<TextSegment> inMemoryEmbeddingStore(){
-        return new InMemoryEmbeddingStore<>();
-    }
 
 
     /**
@@ -325,6 +230,14 @@ public class LLMConfiguration {
                 .maxResults(3) // 指定最多返回几条相关内容
                 .minScore(0.75) // 设定相似度阈值，过滤掉不相关的内容
                 .build();
+    }
+
+
+
+    @Bean(name = "mcpCodeReviewToolProvider")
+    public ToolProvider mcpCodeReviewToolProvider(){
+        // 3. 创建工具提供者
+        return McpToolProvider.builder().mcpClients(localMcpService.codeReviewClient()).build();
     }
 
 

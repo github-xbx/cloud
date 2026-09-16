@@ -3,11 +3,11 @@
 <mapper namespace="com.xbx.study.web.mapper.JobMapper">
 
 
-    <select id="selectAllJob" >
+    <select id="selectAllJob" resultType="com.xbx.study.web.po.ProjectJob">
         select * from job
     </select>
 
-    <select id="selectJobById">
+    <select id="selectJobById" resultType="com.xbx.study.web.po.ProjectJob">
         select * from job where id = #{param1}
     </select>
 
