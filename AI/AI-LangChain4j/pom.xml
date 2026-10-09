@@ -97,6 +97,25 @@
             <artifactId>langchain4j-mcp</artifactId>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.bsc.langgraph4j</groupId>
+            <artifactId>langgraph4j-core</artifactId>
+        </dependency>
+
+        <!--ReAct Agent 执行器(自带 langgraph4j-core / langgraph4j-langchain4j) -->
+        <dependency>
+            <groupId>org.bsc.langgraph4j</groupId>
+            <artifactId>langgraph4j-agent-executor</artifactId>
+        </dependency>
+
+        <!-- 可选:可视化调试 Studio(只依赖 core + dsl,和上面版本冲突无关) -->
+        <dependency>
+            <groupId>org.bsc.langgraph4j</groupId>
+            <artifactId>langgraph4j-studio-springboot</artifactId>
+        </dependency>
+
+
     </dependencies>
 
     <build>

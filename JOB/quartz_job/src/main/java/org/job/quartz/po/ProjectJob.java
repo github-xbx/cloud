@@ -1,10 +1,13 @@
-package com.xbx.study.web.po;
+package org.job.quartz.po;
 
+
+import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
+@TableName("job")
 public class ProjectJob implements Serializable {
 
     @Serial

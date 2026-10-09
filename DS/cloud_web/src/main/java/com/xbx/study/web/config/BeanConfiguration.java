@@ -3,9 +3,6 @@ package com.xbx.study.web.config;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerFactory;
-import org.quartz.impl.StdSchedulerFactory;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -37,16 +34,6 @@ public class BeanConfiguration {
         return Redisson.create(config);
     }
 
-
-    @Bean
-    public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource){
-
-        SchedulerFactoryBean factory = new SchedulerFactoryBean();
-        factory.setConfigLocation(new ClassPathResource("quartz.properties"));
-        factory.setDataSource(dataSource);
-        return factory;
-
-    }
 
 
     @Bean

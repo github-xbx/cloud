@@ -1,39 +1,39 @@
-package com.xbx.study.web.service;
+package org.job.quartz.service;
 
-import com.xbx.study.web.mapper.JobMapper;
-import com.xbx.study.web.po.ProjectJob;
-import com.xbx.study.web.utils.ScheduleUtils;
+
+import com.xbx.database.base.BaseServiceImpl;
 import jakarta.annotation.PostConstruct;
-import org.quartz.JobBuilder;
-import org.quartz.JobDetail;
+import org.job.quartz.mapper.JobMapper;
+import org.job.quartz.po.ProjectJob;
+import org.job.quartz.utils.ScheduleUtils;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class JobService  {
+public class JobService extends BaseServiceImpl<JobMapper, ProjectJob> {
 
 
     // quartz scheduler
     private final Scheduler scheduler;
 
-    private final JobMapper jobMapper;
 
     @Autowired
-    public JobService( Scheduler scheduler, JobMapper jobMapper) {
+    public JobService(Scheduler scheduler) {
         this.scheduler = scheduler;
-        this.jobMapper = jobMapper;
     }
 
 
+    /**
+     * 项目启动时，初始化定时器 主要是防止手动修改数据库导致未同步到定时任务处理（注：不能手动修改数据库ID和任务组名，否则会导致脏数据）
+     */
     @PostConstruct
     public void init() throws Exception {
 
-        List<ProjectJob> list = jobMapper.selectAllJob();
+        List<ProjectJob> list = this.list();
 
         list.forEach(job -> {
             try {

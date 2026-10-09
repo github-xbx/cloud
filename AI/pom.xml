@@ -24,6 +24,7 @@
         <langchain.version>1.16.3</langchain.version>
         <langchain.community.version>1.17.2-beta27</langchain.community.version>
         <langchain.springboot.version>1.16.3-beta26</langchain.springboot.version>
+        <langgraph4j.version>1.9.0-beta7</langgraph4j.version>
     </properties>
 
     <dependencyManagement>
@@ -55,6 +56,14 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>org.bsc.langgraph4j</groupId>
+                <artifactId>langgraph4j-bom</artifactId>
+                <version>${langgraph4j.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

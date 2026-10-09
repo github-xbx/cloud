@@ -1,6 +1,11 @@
-package com.xbx.study.web.config.quartz;
+package org.job.quartz.config.quartz;
 
-import com.xbx.study.web.po.ProjectJob;
+
+import org.apache.commons.lang3.StringUtils;
+import org.job.quartz.po.ProjectJob;
+import org.job.quartz.po.ProjectJobLog;
+import org.job.quartz.service.JobLogService;
+import org.job.quartz.utils.spring.ContextHolder;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -8,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Date;
 
 public abstract class AbstractQuartzJob implements Job {
@@ -55,27 +62,28 @@ public abstract class AbstractQuartzJob implements Job {
         Date startTime = threadLocal.get();
         threadLocal.remove();
 
-//        final SysJobLog sysJobLog = new SysJobLog();
-//        sysJobLog.setJobName(sysJob.getJobName());
-//        sysJobLog.setJobGroup(sysJob.getJobGroup());
-//        sysJobLog.setInvokeTarget(sysJob.getInvokeTarget());
-//        sysJobLog.setStartTime(startTime);
-//        sysJobLog.setStopTime(new Date());
-//        long runMs = sysJobLog.getStopTime().getTime() - sysJobLog.getStartTime().getTime();
-//        sysJobLog.setJobMessage(sysJobLog.getJobName() + " 总共耗时：" + runMs + "毫秒");
-//        if (e != null)
-//        {
-//            sysJobLog.setStatus(Constants.FAIL);
-//            String errorMsg = StringUtils.substring(ExceptionUtil.getExceptionMessage(e), 0, 2000);
-//            sysJobLog.setExceptionInfo(errorMsg);
-//        }
-//        else
-//        {
-//            sysJobLog.setStatus(Constants.SUCCESS);
-//        }
+        final ProjectJobLog projectJobLog = new ProjectJobLog();
+        projectJobLog.setJobName(sysJob.getJobName());
+        projectJobLog.setJobGroup(sysJob.getJobGroup());
+        projectJobLog.setInvokeTarget(sysJob.getInvokeTarget());
+        projectJobLog.setStartTime(startTime);
+        projectJobLog.setStopTime(new Date());
+        projectJobLog.setCreateTime(startTime);
+        long runMs = projectJobLog.getStopTime().getTime() - projectJobLog.getStartTime().getTime();
+        projectJobLog.setJobMessage(projectJobLog.getJobName() + " 总共耗时：" + runMs + "毫秒");
+        if (e != null)
+        {
+            projectJobLog.setStatus("1");
+            String errorMsg = StringUtils.substring(getExceptionMessage(e), 0, 2000);
+            projectJobLog.setExceptionInfo(errorMsg);
+        }
+        else
+        {
+            projectJobLog.setStatus("0");
+        }
 
-        // 写入数据库当中
-        // ContextHolder.getBean(ISysJobLogService.class).addJobLog(sysJobLog);
+         //写入数据库当中
+         ContextHolder.getBean(JobLogService.class).save(projectJobLog);
     }
 
     /**
@@ -86,5 +94,15 @@ public abstract class AbstractQuartzJob implements Job {
      * @throws Exception 执行过程中的异常
      */
     protected abstract void doExecute(JobExecutionContext context, ProjectJob sysJob) throws Exception;
+
+
+    /**
+     * 获取exception的详细错误信息。
+     */
+    private String getExceptionMessage(Throwable e) {
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw, true));
+        return sw.toString();
+    }
 
 }
