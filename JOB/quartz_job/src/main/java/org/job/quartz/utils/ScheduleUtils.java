@@ -1,13 +1,13 @@
-package com.xbx.study.web.utils;
+package org.job.quartz.utils;
 
-import com.xbx.study.web.config.quartz.QuartzDisallowConcurrentExecution;
-import com.xbx.study.web.config.quartz.QuartzJobExecution;
-import com.xbx.study.web.po.ProjectJob;
-import com.xbx.study.web.utils.spring.ContextHolder;
+
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.job.quartz.config.quartz.QuartzDisallowConcurrentExecution;
+import org.job.quartz.config.quartz.QuartzJobExecution;
+import org.job.quartz.po.ProjectJob;
+import org.job.quartz.utils.spring.ContextHolder;
 import org.quartz.*;
-import org.quartz.impl.jdbcjobstore.StdRowLockSemaphore;
 
 import java.text.ParseException;
 import java.util.Date;

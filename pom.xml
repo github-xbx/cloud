@@ -25,17 +25,14 @@
         <module>DS</module>
         <module>RPC</module>
         <module>GRPC</module>
+        <module>JOB</module>
         <module>device</module>
-
         <module>common</module>
 
 
         <module>network_netty</module>
         <module>basic_lock</module>
         <module>_test</module>
-
-
-
 
 
 
