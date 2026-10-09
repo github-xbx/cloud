@@ -44,13 +44,20 @@ public class VectorDbConfiguration {
             ChromaEmbeddingStore.class,
     })
     public EmbeddingStore<TextSegment> chromaEmbeddingStore(){
-        System.out.println("222");
-        return ChromaEmbeddingStore.builder()
-                .baseUrl("http://127.0.0.1:8000")
-                .collectionName("langchain4j_test")
-                .apiVersion(ChromaApiVersion.V2)
-                .timeout(Duration.ofSeconds(5)) //超时时间5s
-                .build();
+
+        EmbeddingStore<TextSegment> embeddingStore = null;
+        try {
+            embeddingStore= ChromaEmbeddingStore.builder()
+                    .baseUrl("http://127.0.0.1:8000")
+                    .collectionName("langchain4j_test")
+                    .apiVersion(ChromaApiVersion.V2)
+                    .timeout(Duration.ofSeconds(5)) //超时时间5s
+                    .build();
+        } catch (Exception e) {
+            embeddingStore = new InMemoryEmbeddingStore<>();
+        }
+
+        return embeddingStore;
     }
 
 

@@ -12,7 +12,7 @@ public class WeatherToolService {
     public String handle(@P("城市") String city, @P("最近天数") int dayNum){
         //查询天气逻辑
 
-        return city + " beijin;"+"最近"+dayNum+"天， 晴。";
+        return city + ";"+"最近"+dayNum+"天， 晴。";
     }
 
 
