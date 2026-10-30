@@ -12,11 +12,11 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 
-public class HttpChannel implements Transport {
+public class HttpOutput implements Transport {
 
 
     private final ServerHttpResponse response;
-    public HttpChannel(ServerHttpResponse  response) {
+    public HttpOutput(ServerHttpResponse  response) {
         this.response = response;
     }
 
