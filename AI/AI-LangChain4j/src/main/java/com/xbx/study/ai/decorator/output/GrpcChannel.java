@@ -1,6 +1,14 @@
 package com.xbx.study.ai.decorator.output;
 
-public class GrpcChannel<T> implements OutputChannel {
+import com.xbx.study.ai.decorator.Transport;
+import io.grpc.stub.StreamObserver;
+import io.micrometer.observation.transport.ResponseContext;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.util.function.Function;
+
+public class GrpcChannel<T> implements Transport {
     private final StreamObserver<T> observer;
     private final Function<String, T> toProto;
     public GrpcChannel(StreamObserver<T> observer, Function<String, T> toProto) {
@@ -8,8 +16,10 @@ public class GrpcChannel<T> implements OutputChannel {
         this.toProto = toProto;
     }
 
+
+
     @Override
-    public Mono<Void> unary(String data) {
+    public Mono<Void> sendUnary(String data, ResponseContext<Object> ctx) {
         return Mono.fromRunnable(() -> {
             observer.onNext(toProto.apply(data));
             observer.onCompleted();
@@ -17,7 +27,7 @@ public class GrpcChannel<T> implements OutputChannel {
     }
 
     @Override
-    public Mono<Void> stream(Flux<String> data) {
+    public Mono<Void> sendStream(Flux<String> data, ResponseContext<Object> ctx) {
         // 用 Mono.create 把 StreamObserver 的完成/失败反向传播回 Mono
         return Mono.create(sink ->
                 data.subscribe(

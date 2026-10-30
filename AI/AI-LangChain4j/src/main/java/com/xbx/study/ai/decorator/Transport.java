@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
  */
 public interface Transport {
 
-    Mono<Void> sendUnary(String date, ResponseContext<Object> ctx);
+    Mono<Void> sendUnary(String data, ResponseContext<Object> ctx);
 
     Mono<Void> sendStream(Flux<String> data, ResponseContext<Object> ctx);
 

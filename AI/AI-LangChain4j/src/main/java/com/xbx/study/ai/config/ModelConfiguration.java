@@ -65,6 +65,17 @@ public class ModelConfiguration {
                 .build();
     }
 
+    @Bean(name = "qwenStream")
+    public StreamingChatModel qwenStream(){
+        return OpenAiStreamingChatModel.builder()
+                .baseUrl("https://ws-2gcnpdewhflb89dx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
+                .apiKey(System.getenv("java_qwen_apikey"))
+                .modelName(modelProperties.getQwen().getChat())
+                //.logRequests(true)
+                //.logResponses(true)
+                .build();
+    }
+
 
     @Bean(name = "qwenImageModel")
     public WanxImageModel imageModel(){

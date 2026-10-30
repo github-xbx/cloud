@@ -3,6 +3,7 @@ package com.xbx.study.ai.decorator;
 import com.xbx.study.ai.decorator.channel.ErrorMapChannel;
 import com.xbx.study.ai.decorator.channel.RetryChannel;
 import com.xbx.study.ai.decorator.channel.TimerChannel;
+import com.xbx.study.ai.service.BaseAiChat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -13,11 +14,11 @@ import reactor.core.publisher.Mono;
  */
 public class EndpointHandler {
     private static final Logger log = LoggerFactory.getLogger(EndpointHandler.class);
-    private final BizService biz;
+    private final BaseAiChat chat;
 
-    public EndpointHandler(BizService biz) { this.biz = biz; }
+    public EndpointHandler(BaseAiChat chat) { this.chat = chat; }
 
-    public void handle(Transport raw, DataPipeline.Config cfg, boolean streaming) {
+    public void handle(Transport raw, DataPipeline.Config cfg, boolean streaming, String msg) {
         // ===== 装饰器层：包裹"发送动作" =====
         // 顺序：ErrorMap 在外（最终兜底）→ Retry 居中（失败重试）→ Timed 在内（统计每次尝试）
         Transport channel = new ErrorMapChannel(
@@ -30,14 +31,14 @@ public class EndpointHandler {
 
         if (streaming) {
             // ===== operator 层：包裹"数据流" =====
-            Flux<String> pipeline = DataPipeline.build(biz.subscribe(), cfg);
+            Flux<String> pipeline = DataPipeline.build(chat.stream(msg), cfg);
 
             channel.sendStream(pipeline,null)
                     .doOnError(ex -> log.error("stream failed", ex))
                     .onErrorResume(ex -> Mono.empty())   // 最终消费，防未处理异常
                     .subscribe();
         } else {
-            channel.sendUnary(biz.fetch(),null)
+            channel.sendUnary(chat.chat(msg),null)
                     .doOnError(ex -> log.error("unary failed", ex))
                     .onErrorResume(ex -> Mono.empty())
                     .subscribe();
