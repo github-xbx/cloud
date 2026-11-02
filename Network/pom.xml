@@ -13,6 +13,7 @@
 
     <modules>
         <module>reactor-netty</module>
+        <module>mqtt</module>
     </modules>
 
 
