@@ -9,8 +9,8 @@ public class GatewayConfig {
         RouteManager manager = new RouteManager();
 
         manager.register(new RouteDefinition(
-                "user-router",
-                "user.UserService",
+                "greeter",
+                "Greeter",
                 "127.0.0.1",
                 9000
         ));

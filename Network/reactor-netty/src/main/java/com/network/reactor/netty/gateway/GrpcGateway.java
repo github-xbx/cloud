@@ -5,7 +5,6 @@ import com.network.reactor.netty.gateway.config.GatewayConfig;
 import com.network.reactor.netty.gateway.route.RouteDefinition;
 import com.network.reactor.netty.gateway.route.RouteManager;
 import com.network.reactor.netty.gateway.route.RouteMatcher;
-import io.netty.buffer.ByteBuf;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.DisposableServer;
@@ -15,7 +14,6 @@ import reactor.netty.http.server.HttpServer;
 import reactor.netty.http.server.HttpServerRequest;
 import reactor.netty.http.server.HttpServerResponse;
 
-import java.nio.charset.StandardCharsets;
 
 public class GrpcGateway {
 
@@ -85,21 +83,21 @@ public class GrpcGateway {
                 .port(8080)
                 .protocol(HttpProtocol.H2C)
                 .doOnConnection(connection -> {
-
-                    System.out.println(
-                            "[Gateway-Inbound] 新连接: "
-                                    + connection.channel().remoteAddress()
-                    );
-
+                    System.out.println("[Gateway-Inbound] 新连接: " + connection.channel().remoteAddress());
                     connection.onDispose(() -> {
-                        System.out.println(
-                                "[Gateway-Inbound] 连接关闭: "
-                                        + connection.channel().remoteAddress()
-                        );
+                        System.out.println("[Gateway-Inbound] 连接关闭: " + connection.channel().remoteAddress());
                     });
-
                 })
                 .handle((request, response)->{
+
+                    System.out.println("========== Gateway Request ==========");
+                    System.out.println("Method: " + request.method());
+                    System.out.println("URI: " + request.uri());
+                    System.out.println("Path: " + request.path());
+                    System.out.println("Content-Type: " + request.requestHeaders().get("content-type"));
+                    System.out.println("TE: " + request.requestHeaders().get("te"));
+                    System.out.println("HTTP Protocol: " + request.protocol());
+                    System.out.println("=====================================");
 
                     String path = request.uri();
                     String method = request.method().name();
@@ -107,33 +105,30 @@ public class GrpcGateway {
                     String serviceName = RouteMatcher.getServiceName(path);
                     if (serviceName == null || method == null) {
                         return request.receive().then(
-                                response.status(400)
-                                        .sendString(Mono.just("Invalid gRPC path")).then()
+                                response.status(400).sendString(Mono.just("Invalid gRPC path")).then()
                         );
                     }
                     RouteDefinition route = routeManager.getRoute(serviceName);
 
                     if (route == null) {
                         return request.receive().then(
-                                response.status(404)
-                                        .sendString(Mono.just("Route not found")).then()
+                                response.status(404).sendString(Mono.just("Route not found")).then()
                         );
                     }
 
                     System.out.println("收到 HTTP 请求");
                     System.out.println("method: " + method);
                     System.out.println("path: " + path);
-                    System.out.println("content-type: "
-                            + request.requestHeaders().get("content-type"));
+                    System.out.println("content-type: " + request.requestHeaders().get("content-type"));
 
                     // 执行后端转发
                     return backendClient.forward(request, response, route);
 
-                }).bindNow();
+                })
 
-        System.out.println(
-                "Gateway started: " + disposableServer.port()
-        );
+                .bindNow();
+
+        System.out.println("Gateway started: " + disposableServer.port());
 
         disposableServer.onDispose().block();
     }

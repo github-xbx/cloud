@@ -1,156 +1,179 @@
 package com.network.reactor.netty.test;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.HttpProtocol;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.http.client.HttpClientResponse;
+import reactor.netty.resources.ConnectionProvider;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 public class GrpcClient {
 
     public static void main(String[] args) throws InterruptedException {
 
-        // 1. 创建 HTTP/2 客户端
-        HttpClient client = HttpClient.create()
-                .protocol(HttpProtocol.H2C)
-                .host("127.0.0.1")
-                .port(8080)
-                .doOnConnected(connection -> {
 
-                    System.out.println(
-                            "[Gateway-Outbound] 连接建立: "
-                                    + connection.channel().remoteAddress()
-                    );
+        ConnectionProvider provider = ConnectionProvider
+                .builder("grpc-client")
+                .maxConnections(1)
+                .pendingAcquireTimeout(Duration.ofSeconds(5))
+                .build();
 
-                })
 
-                .doOnDisconnected(connection -> {
 
-                    System.out.println(
-                            "[Gateway-Outbound] 连接断开: "
-                                    + connection.channel().remoteAddress()
-                    );
+        try {
 
-                })
 
-                .doOnRequest((request, connection) -> {
+            // 1. 创建 HTTP/2 客户端
+            HttpClient client = HttpClient.create(provider)
+                    .protocol(HttpProtocol.H2C)
+                    .host("127.0.0.1")
+                    .port(8080)
+                    .doOnConnected(connection -> {
+                        System.out.println("[Gateway-Outbound] 连接建立: " + connection.channel().remoteAddress());
+                    })
+                    .doOnDisconnected(connection -> {
+                        System.out.println("[Gateway-Outbound] 连接断开: " + connection.channel().remoteAddress());
+                    })
+                    .doOnRequest((request, connection) -> {
+                        System.out.println("[Gateway-Outbound] 请求发送: " + request.resourceUrl());
+                    })
+                    .doOnResponse((response, connection) -> {
+                        System.out.println("[Gateway-Outbound] 后端响应: " + response.status());
+                    });
 
-                    System.out.println(
-                            "[Gateway-Outbound] 请求发送: "
-                                    + request.resourceUrl()
-                    );
+            // 2. 构造 Protobuf 数据
+            // 注意：实际项目中应该使用生成的 Protobuf Request 对象
+            byte[] protobufBytes = "hello gRPC".getBytes();
 
-                })
+            // 3. 编码 gRPC Frame
+            byte[] requestFrame = encodeGrpcFrame(protobufBytes);
 
-                .doOnResponse((response, connection) -> {
+            // 4. 发起 gRPC 请求
+            client.post()
+                    .uri("/user.UserService/GetUser")
 
-                    System.out.println(
-                            "[Gateway-Outbound] 后端响应: "
-                                    + response.status()
-                    );
+                    .send((request, outbound) -> {
 
-                });
+                        request.header("Content-Type", "application/grpc");
+                        request.header("te", "trailers");
 
-        // 2. 构造 Protobuf 数据
-        // 注意：实际项目中应该使用生成的 Protobuf Request 对象
-        byte[] protobufBytes = "hello gRPC".getBytes();
+                        // 发送 gRPC 二进制数据
+                        return outbound.sendByteArray(Mono.just(requestFrame));
+                    })
 
-        // 3. 编码 gRPC Frame
-        byte[] requestFrame = encodeGrpcFrame(protobufBytes);
+                    .responseConnection((res, conn) -> {
 
-        // 4. 发起 gRPC 请求
-        byte[] response = client.post()
-                .uri("/user.UserService/GetUser")
+                        // 5. 检查 HTTP 状态
+                        if (res.status().code() != 200) {
 
-                .send((request, outbound) -> {
+                            return conn.inbound()
+                                    .receive()
+                                    .aggregate()
+                                    .asString()
+                                    .defaultIfEmpty("")
+                                    .flatMap(body -> Mono.<Void>error(
+                                            new RuntimeException("HTTP错误: " + res.status().code() + ", body: " + body)
+                                    ));
+                        }
 
-                    request.header("Content-Type", "application/grpc");
-                    request.header("te", "trailers");
-
-                    // 发送 gRPC 二进制数据
-                    return outbound.sendByteArray(Mono.just(requestFrame));
-                })
-
-                .responseConnection((res, conn) -> {
-
-                    // 5. 检查 HTTP 状态
-                    if (res.status().code() != 200) {
+                        // 6. 边收边解帧：不缓冲整条流，收够一条完整 gRPC Message 就打印一条
+                        ByteBuf cumulation = Unpooled.buffer();
 
                         return conn.inbound()
                                 .receive()
-                                .aggregate()
-                                .asString()
-                                .defaultIfEmpty("")
-                                .flatMap(body -> Mono.error(
-                                        new RuntimeException(
-                                                "HTTP错误: " +
-                                                        res.status().code() +
-                                                        ", body: " + body
-                                        )
-                                ));
-                    }
+                                .doOnNext(chunk -> {
+                                    // receive() 发出的 ByteBuf 在 onNext 返回后会被释放，必须先拷贝
+                                    cumulation.writeBytes(chunk);
+                                    drainGrpcFrames(cumulation);
+                                })
+                                .doFinally(signal -> cumulation.release())
 
-                    // 6. 接收完整响应体
-                    return conn.inbound()
-                            .receive()
-                            .aggregate()
-                            .asByteArray()
-                            .defaultIfEmpty(new byte[0])
+                                // 7. Body 流结束后再读取 Trailers
+                                .then(res.trailerHeaders()
+                                        .defaultIfEmpty(new DefaultHttpHeaders())
+                                        .doOnNext(trailers -> checkGrpcStatus(res, trailers))
+                                        .then());
+                    })
 
-                            // 7. HTTP/2 数据读取完成后，再读取 Trailers
-                            .flatMap(responseBytes ->
-                                    res.trailerHeaders()
-                                            .defaultIfEmpty(new DefaultHttpHeaders())
-                                            .map(trailers -> {
+                    .blockLast();
 
-                                                // 8. 获取 gRPC 状态
-                                                String grpcStatus =
-                                                        trailers.get("grpc-status");
+        }finally {
+            // 所有请求结束后，再释放客户端连接池
+            provider.disposeLater().block(Duration.ofSeconds(10));
 
-                                                String grpcMessage =
-                                                        trailers.get("grpc-message");
-
-                                                // 某些 trailers-only 响应会将状态放在响应头中
-                                                if (grpcStatus == null) {
-                                                    grpcStatus = res.responseHeaders()
-                                                            .get("grpc-status");
-                                                }
-
-                                                if (!"0".equals(grpcStatus)) {
-                                                    throw new RuntimeException(
-                                                            "gRPC调用失败: status=" +
-                                                                    grpcStatus +
-                                                                    ", message=" +
-                                                                    grpcMessage
-                                                    );
-                                                }
-
-                                                // 9. 解码 gRPC Frame
-                                                return decodeGrpcFrame(responseBytes);
-                                            })
-                            );
-
-                })
-
-                .blockLast();
-
-        // 10. 获取 Protobuf 响应数据
-        if (response != null) {
-            System.out.println("响应数据长度：" + response.length);
-
-            System.out.println(
-                    "响应数据：" +
-                            java.util.Arrays.toString(response)
-            );
+            System.out.println("客户端连接池已释放");
         }
 
-
-        Thread.sleep(30000);
-
         System.out.println("客户端准备退出");
+    }
+
+    /**
+     * 从累积缓冲区中解出所有已完整的 gRPC Message 并打印。
+     * 一帧 = 1 byte 压缩标志 + 4 bytes 长度 + N bytes payload
+     */
+    private static void drainGrpcFrames(ByteBuf cumulation) {
+
+        while (cumulation.readableBytes() >= 5) {
+
+            int index = cumulation.readerIndex();
+
+            byte compressed = cumulation.getByte(index);
+            int length = cumulation.getInt(index + 1);
+
+            if (length < 0) {
+                throw new IllegalArgumentException("非法 gRPC Frame 长度: " + length);
+            }
+
+            // 半帧：等下一块数据
+            if (cumulation.readableBytes() < 5 + length) {
+                break;
+            }
+
+            cumulation.skipBytes(5);
+
+            byte[] payload = new byte[length];
+            cumulation.readBytes(payload);
+
+            if (compressed != 0) {
+                throw new UnsupportedOperationException("暂不支持压缩的 gRPC 消息");
+            }
+
+            System.out.println("收到服务端消息: " + new String(payload, StandardCharsets.UTF_8));
+        }
+    }
+
+    /**
+     * 校验 gRPC 状态。
+     * MockBackendServer 目前不发 trailer，这里只告警，不丢弃已经收到的消息。
+     */
+    private static void checkGrpcStatus(HttpClientResponse res, HttpHeaders trailers) {
+
+        String grpcStatus = trailers.get("grpc-status");
+        String grpcMessage = trailers.get("grpc-message");
+
+        // 某些 trailers-only 响应会将状态放在响应头中
+        if (grpcStatus == null) {
+            grpcStatus = res.responseHeaders().get("grpc-status");
+        }
+
+        if (grpcStatus == null) {
+            System.out.println("警告: 未收到 grpc-status trailer（Mock 后端没有发送 trailer），响应体已完整接收");
+            return;
+        }
+
+        if (!"0".equals(grpcStatus)) {
+            throw new RuntimeException("gRPC调用失败: status=" + grpcStatus + ", message=" + grpcMessage);
+        }
+
+        System.out.println("gRPC 状态正常: grpc-status=0");
     }
 
     /**
