@@ -20,25 +20,40 @@ public class GrpcGateway {
     private static final Logger logger = LogManager.getLogger(GrpcGateway.class);
 
 
+    public static Builder builder(){
+        return new Builder();
+    }
+
+
     private DisposableServer disposableServer;
 
-    private final RouteManager routeManager = GatewayConfig.createRouteManager();
-    private final GrpcForwardClient grpcForwardClient = new GrpcForwardClient();
+    private final RouteManager routeManager;
+    private final GrpcForwardClient grpcForwardClient;
+    private final String host;
+    private final int port;
+
+
+    private GrpcGateway(Builder builder){
+        this.routeManager = builder.routeManager;
+        this.grpcForwardClient = builder.grpcForwardClient;
+        this.host = builder.host;
+        this.port = builder.port;
+    }
 
 
 
 
 
     public static void main(String[] args) {
-        GrpcGateway server = new GrpcGateway();
-        server.start();
+        GrpcGateway gateway = GrpcGateway.builder().build();
+        gateway.start();
     }
 
 
     public void start(){
         disposableServer = HttpServer.create()
-                .host("0.0.0.0")
-                .port(8080)
+                .host(host)
+                .port(port)
                 .protocol(HttpProtocol.H2C)
                 .doOnConnection(connection -> {
                     logger.info("[Gateway-Inbound] 新连接: {}", connection.channel().remoteAddress());
@@ -79,5 +94,43 @@ public class GrpcGateway {
         disposableServer.onDispose().block();
     }
 
+
+
+    public static final class Builder {
+        private RouteManager routeManager = GatewayConfig.createRouteManager();
+        private GrpcForwardClient grpcForwardClient = new GrpcForwardClient();
+        private String host = "0.0.0.0";
+        private int port = 8080;
+        private Builder() {}                         // 构造器私有，只能 builder() 进
+
+
+
+        public Builder routeManager(RouteManager routeManager) {
+            this.routeManager = routeManager;
+            return this;
+        }
+
+        public Builder grpcForwardClient(GrpcForwardClient grpcForwardClient) {
+            this.grpcForwardClient = grpcForwardClient;
+            return this;
+        }
+
+        public Builder host(String host) {
+            this.host = host;
+            return this;
+        }
+
+
+        public Builder port(int port) {
+            this.port = port;
+            return this;
+        }
+
+        // 6. 校验集中在 build()，构造出的对象一定合法
+        public GrpcGateway build() {
+
+            return new GrpcGateway(this);
+        }
+    }
 
 }
