@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+    <!-- 1. 全局变量：日志目录、文件名、输出格式，便于统一修改 -->
+    <Properties>
+        <Property name="LOG_HOME">${sys:log.home:-./logs}</Property>
+        <Property name="APP_NAME">${sys:app.name:-application}</Property>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] %logger{36} - %msg%n</Property>
+    </Properties>
+
+    <!-- 2. Appenders：定义日志“输出到哪里、长什么样” -->
+    <Appenders>
+        <!-- 控制台输出 -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}" charset="UTF-8"/>
+        </Console>
+
+        <!-- 滚动文件输出：按天 + 按大小滚动 -->
+        <RollingFile name="RollingFile"
+                     fileName="${LOG_HOME}/${APP_NAME}.log"
+                     filePattern="${LOG_HOME}/${APP_NAME}-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}" charset="UTF-8"/>
+            <Policies>
+                <!-- 每天触发一次滚动 -->
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <!-- 单个文件达到 100 MB 也触发滚动 -->
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+            <!-- 最多保留 30 个归档文件 -->
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+    </Appenders>
+
+    <!-- 3. Loggers：定义哪些日志、什么级别、走哪个 Appender -->
+    <Loggers>
+        <!-- 可以针对特定包单独设置级别，additivity="false" 表示不再向 Root 传递 -->
+        <!--
+        <Logger name="com.yourcompany" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+        -->
+
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

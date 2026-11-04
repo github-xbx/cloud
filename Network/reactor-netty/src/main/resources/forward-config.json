@@ -1,0 +1,18 @@
+{
+  "gRPC": [
+    {
+      "id": "gRPC_greeter",
+      "serviceName": "Greeter",
+      "ip": "127.0.0.1",
+      "port": 9000,
+
+    },
+    {
+      "id": "gRPC_order-route",
+      "serviceName": "order.OrderService",
+      "ip": "127.0.0.1",
+      "port": 9002,
+
+    }
+  ]
+}

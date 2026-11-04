@@ -1,9 +1,11 @@
-package com.network.reactor.netty.gateway;
+package com.network.reactor.netty.gateway.forward;
 
 import com.network.reactor.netty.gateway.route.RouteDefinition;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
@@ -18,7 +20,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class BackendClient {
+public class GrpcForwardClient {
+    private static final Logger logger = LogManager.getLogger(GrpcForwardClient.class);
 
     private final HttpClient httpClient;
     private final ConnectionProvider provider;
@@ -26,20 +29,14 @@ public class BackendClient {
     private static final String TRAILER_NAMES="grpc-status, grpc-message, grpc-status-details-bin";
 
     //不允许直接转发的逐跳 Header
-    private static final Set<String> GRPC_TRAILER_NAMES = Set.of(
-            "grpc-status",
-            "grpc-message",
-            "grpc-status-details-bin"
-    );
+    private static final Set<String> GRPC_TRAILER_NAMES = Set.of("grpc-status", "grpc-message", "grpc-status-details-bin");
 
 
-    public BackendClient() {
-
+    public GrpcForwardClient() {
         this.provider = ConnectionProvider.builder("grpc-gateway-backend")
                 .maxConnections(100)
                 .pendingAcquireTimeout(Duration.ofSeconds(5))
                 .build();
-
 
         this.httpClient = HttpClient.create(provider)
                 .protocol(HttpProtocol.H2C)
@@ -84,7 +81,6 @@ public class BackendClient {
                     // Backend Body 完成并读取 Trailer 后，才会完成下游发送流。
                     response.trailerHeaders(out ->{
                         copyGrpcTrailers(trailers, out);
-                        System.out.println("Gateway 输出 Trailer: " + out);
                     });
 
                     //核心 流式读取 Backend Body
@@ -96,12 +92,11 @@ public class BackendClient {
                                     .defaultIfEmpty(new DefaultHttpHeaders())
                                     .doOnNext(t -> {
                                         copyGrpcTrailers(t, trailers);
-                                        System.out.println("收到 Backend Trailer: " + t);
                                     }).thenMany(Flux.empty())
                     );
 
                     responseStarted.set(true);
-                    System.out.println("开始流式转发 Backend 响应");
+                    logger.info("开始流式转发 Backend 响应");
                     return response.send(responseWithTrailers).then()
                             /*
                              * 客户端取消时,取消对应 Backend 请求
@@ -134,15 +129,11 @@ public class BackendClient {
     /*
      * 请求 Headers 转发
      */
-    private void copyRequestHeaders(
-            HttpHeaders source,
-            HttpHeaders target) {
+    private void copyRequestHeaders(HttpHeaders source, HttpHeaders target) {
 
         for (Map.Entry<String, String> entry : source) {
-
             String name = entry.getKey();
             String value = entry.getValue();
-
             if (isHopByHopHeader(name)) {
                 continue;
             }
@@ -151,19 +142,15 @@ public class BackendClient {
              * HTTP/2 只允许 TE: trailers
              */
             if (name.equalsIgnoreCase("te")) {
-
                 if ("trailers".equalsIgnoreCase(value.trim())) {
                     target.add("te", "trailers");
                 }
-
                 continue;
             }
-
             /*
              * Host、Content-Length 等由 Gateway 重新处理。
              */
-            if (name.equalsIgnoreCase("host")
-                    || name.equalsIgnoreCase("content-length")
+            if (name.equalsIgnoreCase("host") || name.equalsIgnoreCase("content-length")
                     || name.equalsIgnoreCase("trailer")) {
                 continue;
             }
@@ -190,14 +177,11 @@ public class BackendClient {
     private void copyResponseHeaders(HttpHeaders source, HttpServerResponse target) {
 
         for (Map.Entry<String, String> entry : source) {
-
             String name = entry.getKey();
             String value = entry.getValue();
-
             if (isHopByHopHeader(name)) {
                 continue;
             }
-
             if (name.equalsIgnoreCase("content-length")
                     || name.equalsIgnoreCase("transfer-encoding")
                     || name.equalsIgnoreCase("trailer")
@@ -216,7 +200,6 @@ public class BackendClient {
      * Hop-by-hop Headers
      */
     private boolean isHopByHopHeader(String name) {
-
         return name.equalsIgnoreCase("connection")
                 || name.equalsIgnoreCase("keep-alive")
                 || name.equalsIgnoreCase("proxy-connection")
@@ -227,20 +210,13 @@ public class BackendClient {
     /*
      * 转发 gRPC Trailer
      */
-    private void copyGrpcTrailers(
-            HttpHeaders source,
-            HttpHeaders target) {
+    private void copyGrpcTrailers(HttpHeaders source, HttpHeaders target) {
 
         for (Map.Entry<String, String> entry : source) {
-
             String name = entry.getKey();
-
-            if (GRPC_TRAILER_NAMES.contains(
-                    name.toLowerCase()
-            )) {
+            if (GRPC_TRAILER_NAMES.contains(name.toLowerCase())) {
                 target.add(name, entry.getValue());
             }
         }
     }
-
 }
