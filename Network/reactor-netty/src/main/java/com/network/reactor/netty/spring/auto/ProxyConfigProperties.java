@@ -26,7 +26,8 @@ public record ProxyConfigProperties(
             //后端ip
             String ip,
             //后端端口
-            int port
+            int port,
+            @DefaultValue("1") int weight
     ){}
 }
 

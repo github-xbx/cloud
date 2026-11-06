@@ -45,12 +45,6 @@ public class GrpcGateway implements IGateway {
 
 
 
-    public static void main(String[] args) {
-        GrpcGateway gateway = GrpcGateway.builder().build();
-        gateway.start();
-    }
-
-
     public void start(){
         disposableServer = HttpServer.create()
                 .host(host)
@@ -80,7 +74,7 @@ public class GrpcGateway implements IGateway {
                     if (serviceName == null || method == null) {
                         return request.receive().then(response.status(400).sendString(Mono.just("Invalid gRPC path")).then());
                     }
-                    RouteDefinition route = routeManager.getRoute(serviceName);
+                    RouteDefinition route = routeManager.selectRoute(serviceName);
                     if (route == null) {
                         return request.receive().then(response.status(404).sendString(Mono.just("Route not found")).then());
                     }

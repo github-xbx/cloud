@@ -12,14 +12,16 @@ public class GatewayConfig {
                 "greeter",
                 "Greeter",
                 "127.0.0.1",
-                9000
+                9000,
+                1
         ));
 
         manager.register(new RouteDefinition(
                 "order-route",
                 "order.OrderService",
                 "127.0.0.1",
-                9002
+                9002,
+                1
         ));
 
         return manager;

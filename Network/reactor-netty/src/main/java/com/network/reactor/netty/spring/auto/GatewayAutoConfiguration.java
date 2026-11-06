@@ -31,10 +31,10 @@ public class GatewayAutoConfiguration {
         List<ProxyConfigProperties.ProxyConfig> gRpc = properties.gRpc();
         List<ProxyConfigProperties.ProxyConfig> http = properties.http();
         Optional.ofNullable(gRpc).orElse(Collections.emptyList()).forEach(rpc ->
-                routeManager.register(new RouteDefinition(rpc.id(), rpc.serviceName(), rpc.ip(), rpc.port()))
+                routeManager.register(new RouteDefinition(rpc.id(), rpc.serviceName(), rpc.ip(), rpc.port(), rpc.weight()))
         );
         Optional.ofNullable(http).orElse(Collections.emptyList()).forEach(rpc ->
-                routeManager.register(new RouteDefinition(rpc.id(), rpc.serviceName(), rpc.ip(), rpc.port()))
+                routeManager.register(new RouteDefinition(rpc.id(), rpc.serviceName(), rpc.ip(), rpc.port(), rpc.weight()))
         );
 
         return routeManager;
