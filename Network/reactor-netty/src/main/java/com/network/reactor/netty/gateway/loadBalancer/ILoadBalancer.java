@@ -1,4 +1,4 @@
-package com.network.reactor.netty.loadBalancer;
+package com.network.reactor.netty.gateway.loadBalancer;
 
 public interface ILoadBalancer<T> {
 
