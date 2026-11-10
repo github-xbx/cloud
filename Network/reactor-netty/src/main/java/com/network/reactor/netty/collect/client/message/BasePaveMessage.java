@@ -1,7 +1,7 @@
 package com.network.reactor.netty.collect.client.message;
 
 
-import com.network.reactor.netty.collect.client.domain.PaveRecord;
+import com.network.reactor.netty.collect.domain.PaveRecord;
 import io.netty.buffer.ByteBuf;
 
 public abstract class BasePaveMessage {

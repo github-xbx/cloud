@@ -1,7 +1,7 @@
 package com.network.reactor.netty.collect.client.handler;
 
 
-import com.network.reactor.netty.collect.client.domain.PaveRecord;
+import com.network.reactor.netty.collect.domain.PaveRecord;
 import com.network.reactor.netty.collect.client.message.impl.ReadRecordRequest;
 import com.network.reactor.netty.collect.client.message.impl.ReadRecordResponse;
 import io.netty.channel.ChannelHandlerContext;

@@ -1,4 +1,4 @@
-package com.network.reactor.netty.collect.client.domain;
+package com.network.reactor.netty.collect.domain;
 
 public record PaveRecord(
         Long id,

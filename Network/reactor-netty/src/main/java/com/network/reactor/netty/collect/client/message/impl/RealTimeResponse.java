@@ -1,7 +1,7 @@
 package com.network.reactor.netty.collect.client.message.impl;
 
 
-import com.network.reactor.netty.collect.client.domain.PaveRecord;
+import com.network.reactor.netty.collect.domain.PaveRecord;
 import com.network.reactor.netty.collect.client.message.BasePaveMessage;
 import com.network.reactor.netty.collect.client.message.PaveMessageInput;
 import io.netty.buffer.ByteBuf;

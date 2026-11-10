@@ -2,7 +2,7 @@ package com.network.reactor.netty.collect.client.protocol;
 
 import com.network.reactor.netty.collect.client.message.PaveMessageInput;
 import com.network.reactor.netty.collect.client.message.PaveMessageOutput;
-import com.network.reactor.netty.client.collect.message.impl.*;
+import com.network.reactor.netty.collect.client.message.impl.*;
 import com.network.reactor.netty.collect.client.message.impl.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
