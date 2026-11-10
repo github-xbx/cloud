@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: my-spring-ai
+  ai:
+    openai:
+      base-url: https://api.deepseek.com
+      api-key: ${java_deepseek_apikey}
+      chat:
+
+        options:
+          model: deepseek-flash
+          temperature: 0.7
+          reasoning-effort: low
+
+
+logging:
+  level:
+    org.springframework.ai.chat.client.advisor: debug
+    com.xbx.study.springai: debug
