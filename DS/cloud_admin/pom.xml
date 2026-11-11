@@ -24,6 +24,12 @@
             <version>1.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.network</groupId>
+            <artifactId>network-spring-boot-starter</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
 
     </dependencies>
 

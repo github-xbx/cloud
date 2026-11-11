@@ -46,7 +46,7 @@ public class GrpcForwardClient {
 
     public Mono<Void> forward(HttpServerRequest request, HttpServerResponse response, RouteDefinition route){
 
-        String uri = request.uri();
+
         AtomicBoolean responseStarted = new AtomicBoolean(false);
 
         return this.httpClient
@@ -57,7 +57,7 @@ public class GrpcForwardClient {
 
                 .request(request.method())//保留原始的 Http method
 
-                .uri(uri)//保留 gRpc方法路径
+                .uri( request.uri() )//保留 gRpc方法路径
                 .send(request.receive().retain()) // 请求body 直接流式转发
                 .responseConnection((backendResponse, connection) -> {
                     response.status(backendResponse.status().code());
@@ -98,10 +98,7 @@ public class GrpcForwardClient {
                     responseStarted.set(true);
                     logger.info("开始流式转发 Backend 响应");
                     return response.send(responseWithTrailers).then()
-                            /*
-                             * 客户端取消时,取消对应 Backend 请求
-                             * 不要在征尘完成时主动关闭连接，正常完成链接可以由连接池复用
-                             */
+                             // 客户端取消时,取消对应 Backend 请求 不要在征尘完成时主动关闭连接，正常完成链接可以由连接池复用
                             .doFinally(signal -> {
                                 if (signal == SignalType.CANCEL){
                                     connection.dispose();
@@ -112,12 +109,10 @@ public class GrpcForwardClient {
                 })
                 // // 错误处理
                 .onErrorResume(error -> {
-                    error.printStackTrace();
+                    //error.printStackTrace();
+                    logger.error(error);
                     if (responseStarted.get()){
-                        /*
-                         * 响应已经开始，不能再修改 HTTP 状态码。
-                         * 让当前 HTTP/2 Stream 以错误结束。
-                         */
+                        // 响应已经开始，不能再修改 HTTP 状态码。 让当前 HTTP/2 Stream 以错误结束。
                         return Mono.error(error);
                     }
                     return response.status(502).sendString(Mono.just("Gateway backend error")).then();

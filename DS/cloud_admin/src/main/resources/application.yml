@@ -4,3 +4,18 @@ server:
 spring:
   config:
     import: application-db.yml
+
+
+gateway:
+  enabled: true
+  host: 0.0.0.0
+  port: 9090
+  g-rpc:
+    - id: greeter_0
+      ip: 127.0.0.1
+      port: 9000
+      serviceName: Greeter
+    - id: greeter_1
+      ip: 127.0.0.1
+      port: 10000
+      serviceName: Greeter

@@ -1,6 +1,5 @@
-package com.network.reactor.netty;
+package com.network.reactor.netty.server;
 
-import com.network.reactor.netty.handler.DeviceMessageHandler;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import reactor.netty.Connection;
@@ -34,14 +33,8 @@ public class Server {
                 //设置tcp pipeline 解码器
                 .doOnChannelInit((observer, channel, remateAddress) -> {
                     channel.pipeline()
-                            .addLast(
-                                    "frameDecoder",
-                                    new LineBasedFrameDecoder(8192)
-                            )
-                            .addLast(
-                                    "stringDecoder",
-                                    new StringDecoder(StandardCharsets.UTF_8)
-                            );
+                            .addLast("frameDecoder", new LineBasedFrameDecoder(8192))
+                            .addLast("stringDecoder", new StringDecoder(StandardCharsets.UTF_8));
                 })
                 // 每个设备连接的业务处理
                 .handle((inbound, outbound) -> {
@@ -60,8 +53,8 @@ public class Server {
                             .subscribe();
 
 
-                    return inbound.receiveObject()
-                            .ofType(String.class)
+                    return inbound.receive().asString(StandardCharsets.UTF_8)
+
                             .concatMap(message ->
                                     handler.handler(message, connection).map(response -> response + "\n")
                             )

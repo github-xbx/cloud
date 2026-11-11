@@ -3,7 +3,7 @@
 
     <!-- 1. 全局变量：日志目录、文件名、输出格式，便于统一修改 -->
     <Properties>
-        <Property name="LOG_HOME">${sys:log.home:-./logs}</Property>
+        <Property name="LOG_HOME">${sys:log.home:-${sys:user.dir}/logs/${sys:app.name:-application}}</Property>
         <Property name="APP_NAME">${sys:app.name:-application}</Property>
         <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] %logger{36} - %msg%n</Property>
     </Properties>
@@ -34,12 +34,10 @@
     <!-- 3. Loggers：定义哪些日志、什么级别、走哪个 Appender -->
     <Loggers>
         <!-- 可以针对特定包单独设置级别，additivity="false" 表示不再向 Root 传递 -->
-        <!--
-        <Logger name="com.yourcompany" level="DEBUG" additivity="false">
+        <Logger name="tcp" level="DEBUG" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="RollingFile"/>
         </Logger>
-        -->
 
         <Root level="INFO">
             <AppenderRef ref="Console"/>

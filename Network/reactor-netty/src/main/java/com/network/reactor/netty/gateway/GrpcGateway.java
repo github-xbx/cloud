@@ -1,7 +1,6 @@
 package com.network.reactor.netty.gateway;
 
 
-import com.network.reactor.netty.gateway.config.GatewayConfig;
 import com.network.reactor.netty.gateway.forward.GrpcForwardClient;
 import com.network.reactor.netty.gateway.route.RouteDefinition;
 import com.network.reactor.netty.gateway.route.RouteManager;
@@ -13,8 +12,10 @@ import reactor.netty.DisposableServer;
 import reactor.netty.http.HttpProtocol;
 import reactor.netty.http.server.HttpServer;
 
+import java.time.Duration;
 
-public class GrpcGateway {
+
+public class GrpcGateway implements IGateway {
 
     // 上游 gRPC 服务地址（此处用 h2c 明文演示）
     private static final Logger logger = LogManager.getLogger(GrpcGateway.class);
@@ -42,12 +43,6 @@ public class GrpcGateway {
 
 
 
-
-
-    public static void main(String[] args) {
-        GrpcGateway gateway = GrpcGateway.builder().build();
-        gateway.start();
-    }
 
 
     public void start(){
@@ -79,7 +74,7 @@ public class GrpcGateway {
                     if (serviceName == null || method == null) {
                         return request.receive().then(response.status(400).sendString(Mono.just("Invalid gRPC path")).then());
                     }
-                    RouteDefinition route = routeManager.getRoute(serviceName);
+                    RouteDefinition route = routeManager.selectRoute(serviceName);
                     if (route == null) {
                         return request.receive().then(response.status(404).sendString(Mono.just("Route not found")).then());
                     }
@@ -95,9 +90,15 @@ public class GrpcGateway {
     }
 
 
+    public void stop(){
+        if (disposableServer != null){
+            disposableServer.disposeNow(Duration.ofSeconds(5));
+        }
+    }
+
 
     public static final class Builder {
-        private RouteManager routeManager = GatewayConfig.createRouteManager();
+        private RouteManager routeManager;
         private GrpcForwardClient grpcForwardClient = new GrpcForwardClient();
         private String host = "0.0.0.0";
         private int port = 8080;

@@ -6,15 +6,23 @@
         <artifactId>AI</artifactId>
         <version>1.0</version>
     </parent>
+
     <groupId>com.xbx.study.springai</groupId>
     <artifactId>AI-SpringAi</artifactId>
     <packaging>jar</packaging>
     <name>AI-SpringAi</name>
 
     <dependencies>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- spring ai openai-->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
         </dependency>
     </dependencies>
     <build>
