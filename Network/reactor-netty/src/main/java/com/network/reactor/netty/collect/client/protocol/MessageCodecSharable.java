@@ -73,10 +73,12 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, PaveMes
             int seq = Byte.toUnsignedInt(buf.readByte());
             int frame = Byte.toUnsignedInt(buf.readByte());
 
-            _data = buf.readBytes(length - 4);
-            int crc = buf.readUnsignedShort();
+            _data = buf.readBytes(length - 2);
+            data = _data.readBytes(_data.readableBytes() - 2);
 
-            buf.resetReaderIndex();
+            int crc = _data.readUnsignedShort();
+
+            byteBuf.resetReaderIndex();
 
             // crc 校验
             byte[] bytes = new byte[length - 2 + 4];
@@ -91,11 +93,12 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, PaveMes
                 input.setFrame(frame);
                 input.setSequence(seq);
                 input.setCrcValid(crc1 == crc);
-                input.decode(_data);
+                input.decode(data);
                 list.add(input);
 
             }
         } catch (Exception e) {
+            e.printStackTrace();
             if(buf != null) buf.release();
             if(_data != null) _data.release();
             if(data != null) data.release();
