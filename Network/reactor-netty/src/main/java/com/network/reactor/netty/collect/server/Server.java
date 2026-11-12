@@ -6,7 +6,7 @@ import com.network.reactor.netty.collect.server.handler.ReadRecordRespHandler;
 import com.network.reactor.netty.collect.server.handler.SetWindSpeedUnitRespHandler;
 import com.network.reactor.netty.collect.server.handler.WriteConfigDataRespHandler;
 import com.network.reactor.netty.collect.server.handler.reactive.handler.DeviceInfoHandler;
-import com.network.reactor.netty.collect.server.handler.reactive.handler.MessageHandler;
+import com.network.reactor.netty.collect.domain.MessageHandler;
 import com.network.reactor.netty.collect.server.handler.reactive.handler.ReadRecordHandler;
 import com.network.reactor.netty.collect.server.message.*;
 import com.network.reactor.netty.collect.server.protocol.ProtocolFrameDecoder;
@@ -32,6 +32,8 @@ public class Server {
 
     private static Map<Class<?>, MessageHandler<?>> map = new HashMap<>();
 
+
+    private static final Boolean isCollect = true;
 
     static {
         map.put(DeviceInfoRespMsg.class, new DeviceInfoHandler());
@@ -121,7 +123,7 @@ public class Server {
     private Mono<Void> serverHandler(NettyInbound in, NettyOutbound out){
 
         // Mono 表示 0个 或 1个 收条信息 ，建立连接之后发送的一条信息
-        Mono<Object> device = Mono.just(new DeviceInfoReqMsg());
+        Mono<Object> device = isCollect ? Mono.just(new DeviceInfoReqMsg()) : Mono.empty();
         // Flux 表示 1个 或 n个  server 和 client 之间 的交互流
         Flux<Object> flux = in.receiveObject().concatMap(this::onMessage);
 

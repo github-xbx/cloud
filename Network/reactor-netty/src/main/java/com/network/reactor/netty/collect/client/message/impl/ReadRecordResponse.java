@@ -32,4 +32,15 @@ public class ReadRecordResponse extends BasePaveMessage implements PaveMessageIn
         this.confirm = buf.readUnsignedShort();
         this.count = buf.readUnsignedShort();
     }
+
+    @Override
+    public String toString() {
+        return "ReadRecordResponse{" +
+                "confirm=" + confirm +
+                ", count=" + count +
+                ", frame=" + frame +
+                ", sequence=" + sequence +
+                ", crcValid=" + crcValid +
+                '}';
+    }
 }

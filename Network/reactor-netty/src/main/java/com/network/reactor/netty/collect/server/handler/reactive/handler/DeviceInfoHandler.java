@@ -1,10 +1,13 @@
 package com.network.reactor.netty.collect.server.handler.reactive.handler;
 
+import com.network.reactor.netty.collect.domain.MessageHandler;
 import com.network.reactor.netty.collect.server.message.DeviceInfoRespMsg;
 import com.network.reactor.netty.collect.server.message.ReadRecordReqMsg;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import reactor.core.publisher.Mono;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * 收到设备信息：存库，然后紧接着下发「读记录」。
@@ -24,6 +27,11 @@ public class DeviceInfoHandler implements MessageHandler<DeviceInfoRespMsg> {
     @Override
     public Mono<Object> handle(DeviceInfoRespMsg msg) {
         logger.info("[Server] 设备信息 => {}", msg);
+        try {
+            TimeUnit.SECONDS.sleep(2);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return Mono.just(new ReadRecordReqMsg(0, 0, 1));
     }
 }

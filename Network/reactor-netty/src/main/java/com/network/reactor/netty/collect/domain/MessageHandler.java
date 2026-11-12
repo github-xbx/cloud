@@ -1,4 +1,4 @@
-package com.network.reactor.netty.collect.server.handler.reactive.handler;
+package com.network.reactor.netty.collect.domain;
 
 import reactor.core.publisher.Mono;
 

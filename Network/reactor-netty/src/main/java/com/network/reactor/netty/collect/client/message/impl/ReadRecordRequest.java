@@ -12,9 +12,10 @@ import java.util.List;
 public class ReadRecordRequest extends BasePaveMessage implements PaveMessageOutput {
 
     /**
-     * 本次发送记录数
+     * 本次发送记录数。默认 0，并且始终以 records.size() 为准，
+     * 不要手动设成和列表不一致的值（否则对端会按声明的条数去解析，直接越界）
      */
-    private Integer readCount = 1;
+    private Integer readCount = 0;
 
     /**
      * 未确认记录数
@@ -31,7 +32,8 @@ public class ReadRecordRequest extends BasePaveMessage implements PaveMessageOut
     }
 
     public ReadRecordRequest(List<PaveRecord> list, Integer frame, Integer sequence){
-        this.records = list;
+        this.records = list == null ? new ArrayList<>() : list;
+        this.readCount = this.records.size();
         this.frame = frame;
         this.sequence = sequence;
     }
@@ -63,7 +65,8 @@ public class ReadRecordRequest extends BasePaveMessage implements PaveMessageOut
 
     @Override
     public void encode(ByteBuf buf) {
-        buf.writeShort(this.readCount);
+        // 以实际条数为准，彻底避免"声明 N 条却写 0 条"
+        buf.writeShort(this.records.size());
         buf.writeInt(this.noConfirm);
         for (PaveRecord record : records) {
             generateData(buf, record);

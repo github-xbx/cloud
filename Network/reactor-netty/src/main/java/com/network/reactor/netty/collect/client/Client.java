@@ -5,19 +5,30 @@ import com.network.reactor.netty.collect.client.handler.HeartBeatResponseHandler
 import com.network.reactor.netty.collect.client.handler.ReadRecordResponseHandler;
 import com.network.reactor.netty.collect.client.handler.SetWindSpeedUnitHandler;
 import com.network.reactor.netty.collect.client.handler.WriteConfigDataHandler;
+import com.network.reactor.netty.collect.client.handler.reactive.handler.DeviceInfoHandler;
+import com.network.reactor.netty.collect.client.handler.reactive.handler.ReadRecordHandler;
 import com.network.reactor.netty.collect.client.message.impl.DeviceInfoRequest;
+import com.network.reactor.netty.collect.client.message.impl.DeviceInfoResponse;
+import com.network.reactor.netty.collect.client.message.impl.ReadRecordResponse;
 import com.network.reactor.netty.collect.client.protocol.MessageCodecSharable;
 import com.network.reactor.netty.collect.client.protocol.ProtocolFrameDecoder;
+import com.network.reactor.netty.collect.domain.MessageHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
+import reactor.netty.NettyInbound;
+import reactor.netty.NettyOutbound;
 import reactor.netty.NettyPipeline;
 import reactor.netty.tcp.TcpClient;
 import reactor.netty.transport.logging.AdvancedByteBufFormat;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 public class Client {
@@ -26,9 +37,17 @@ public class Client {
 
     private static final int PORT = 8080;
 
+    private static Map<Class<?>, MessageHandler<?>> handlerMap = new HashMap<>();
+    static {
+        handlerMap.put(DeviceInfoResponse.class, new DeviceInfoHandler());
+        handlerMap.put(ReadRecordResponse.class, new ReadRecordHandler());
+    }
+
+
 
     public static void main(String[] args) throws InterruptedException {
-        new Client().conn();
+        //new Client().conn();
+        new Client().reactorConn();
     }
 
 
@@ -74,5 +93,33 @@ public class Client {
     }
 
 
+
+
+    public void reactorConn() throws InterruptedException {
+        TcpClient.create()
+                .host("127.0.0.1")
+                .port(8080)
+                .doOnChannelInit((co, channel, address) -> {
+                    channel.pipeline()
+                            .addBefore(NettyPipeline.ReactiveBridge,"protocol", new ProtocolFrameDecoder())
+                            .addBefore(NettyPipeline.ReactiveBridge,"sharable", new MessageCodecSharable());
+                })
+                .handle(this::clientHandler)
+                .wiretap("tcp",LogLevel.DEBUG, AdvancedByteBufFormat.TEXTUAL)
+                .connectNow(Duration.ofSeconds(3));
+
+        // 保持主线程运行；收到 Ctrl+C 时进程退出，连接随之关闭
+        new CountDownLatch(1).await();
+    }
+
+    @SuppressWarnings("unchecked")
+    public Mono<Void> clientHandler(NettyInbound in, NettyOutbound out){
+
+        Flux<Object> flux = in.receiveObject().concatMap((a) -> {
+            MessageHandler<Object> messageHandler = (MessageHandler<Object>)handlerMap.get(a.getClass());
+            return messageHandler == null ? Mono.empty() : messageHandler.handle(a);
+        });
+        return out.sendObject(flux).then();
+    }
 
 }
