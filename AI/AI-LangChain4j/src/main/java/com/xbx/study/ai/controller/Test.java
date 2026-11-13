@@ -2,7 +2,6 @@ package com.xbx.study.ai.controller;
 
 import com.xbx.study.ai.decorator.DataPipeline;
 import com.xbx.study.ai.decorator.EndpointHandler;
-import com.xbx.study.ai.decorator.output.HttpChannel;
 import com.xbx.study.ai.service.StreamChat;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,7 +43,7 @@ public class Test {
         /* gracefulError */   true
         );
 
-        handler.handle(new HttpChannel(response), cfg, true, message);
+       // handler.handle(new HttpChannel(response), cfg, true, message);
 
         return streamChatService.stream(message);
     }
