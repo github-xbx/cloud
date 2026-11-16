@@ -20,6 +20,7 @@
         <module>reactor-netty</module>
         <module>mqtt</module>
         <module>starter</module>
+        <module>web-flux</module>
     </modules>
 
     <dependencyManagement>

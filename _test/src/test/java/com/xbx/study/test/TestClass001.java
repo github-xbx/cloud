@@ -3,7 +3,12 @@ package com.xbx.study.test;
 
 import org.junit.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -44,9 +49,40 @@ public class TestClass001 {
 
 
     @Test
-    public void test2(){
+    public void test2() throws IOException {
 
 
+        byte[] bytes = Files.readAllBytes(Paths.get("D:/logo.png"));
+        String base64 = Base64.getEncoder().encodeToString(bytes);
+        System.out.println(base64);
+
+
+    }
+
+
+    /**
+     * lur 最近 最久未使用
+     */
+    @Test
+    public void lur(){
+
+        //三个字含义 分别 容量、荷载因子、是否顺序访问
+        Map<String, String> map = new LinkedHashMap<>(2,0.75F, true);
+
+        map.put("a","a");
+        map.put("b","b");
+        map.put("c","c");
+
+        System.out.println(map);
+
+        map.get("c");
+        System.out.println(map);
+        map.get("a");
+        System.out.println(map);
+        map.get("a");
+        System.out.println(map);
+        map.get("b");
+        System.out.println(map);
 
 
     }
