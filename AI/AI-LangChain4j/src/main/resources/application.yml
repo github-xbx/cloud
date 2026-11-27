@@ -33,8 +33,8 @@ logging:
 model:
   qwen:
     video: happyhorse-1.1-r2v
-    image: qwen-image-2.0-pro-2026-06-22
-    chat: deepseek-v4-pro-0813
+    image: qwen-image-2.1-pro
+    chat: qwen4-max
     embedding: qwen3.7-text-embedding
   deepseek:
     chat: deepseek-v4-pro

@@ -1,0 +1,18 @@
+
+spring:
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    # 开发时可将 .db 文件放在 src/main/resources 下，使用 resource 前缀
+    # url: jdbc:sqlite::resource:db/app.db
+    # 生产环境推荐使用绝对路径，避免 JAR 包内资源不可写
+    url: jdbc:sqlite:./data/sqlite.db
+    username: "" # SQLite 无需认证
+    password: ""
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 可选：打印 SQL 便于调试
+  global-config:
+    db-config:
+      id-type: auto # 适配 SQLite 的自增主键
+  mapper-locations: classpath*:/mapper/**/*.xml # 如果有 XML Mapper

@@ -1,0 +1,78 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.xbx.study</groupId>
+        <artifactId>AI</artifactId>
+        <version>1.0</version>
+    </parent>
+    <groupId>com.ai.langgraph</groupId>
+    <artifactId>AI-langgraph4j</artifactId>
+    <packaging>jar</packaging>
+    <name>AI-langgraph4j</name>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-open-ai</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+        </dependency>
+
+        <!-- 流式输出 -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-reactor</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bsc.langgraph4j</groupId>
+            <artifactId>langgraph4j-core</artifactId>
+        </dependency>
+
+        <!--ReAct Agent 执行器(自带 langgraph4j-core / langgraph4j-langchain4j) -->
+<!--        <dependency>-->
+<!--            <groupId>org.bsc.langgraph4j</groupId>-->
+<!--            <artifactId>langgraph4j-langchain4j-agentexecutor</artifactId>-->
+<!--        </dependency>-->
+
+        <!-- 可选:可视化调试 Studio(只依赖 core + dsl,和上面版本冲突无关) -->
+        <dependency>
+            <groupId>org.bsc.langgraph4j</groupId>
+            <artifactId>langgraph4j-studio-springboot</artifactId>
+        </dependency>
+
+        <!-- JSch：SSH 直连服务器，SCP 传文件 + 远程执行命令 -->
+        <dependency>
+            <groupId>com.github.mwiede</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.2.16</version>
+        </dependency>
+
+        <!-- MyBatis-Plus -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>3.5.5</version> <!-- 建议 3.5.5+ -->
+        </dependency>
+        <!-- SQLite JDBC 驱动 -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.46.1.0</version> <!-- 建议使用较新版本 -->
+        </dependency>
+
+    </dependencies>
+    <build>
+        <finalName>AI-langgraph4j</finalName>
+    </build>
+</project>

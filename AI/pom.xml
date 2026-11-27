@@ -14,6 +14,7 @@
         <module>AI-copilotkit-project</module>
         <module>agui4j</module>
         <module>AI-SpringAi</module>
+        <module>AI-langgraph4j</module>
     </modules>
 
     <properties>
@@ -24,7 +25,7 @@
         <langchain.version>1.16.3</langchain.version>
         <langchain.community.version>1.17.2-beta27</langchain.community.version>
         <langchain.springboot.version>1.16.3-beta26</langchain.springboot.version>
-        <langgraph4j.version>1.9.0-beta7</langgraph4j.version>
+        <langgraph4j.version>1.9.10</langgraph4j.version>
 
         <spring.ai.version>1.1.8</spring.ai.version>
     </properties>
