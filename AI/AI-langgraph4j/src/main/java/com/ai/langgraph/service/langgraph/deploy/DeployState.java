@@ -2,8 +2,10 @@ package com.ai.langgraph.service.langgraph.deploy;
 
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -39,7 +41,9 @@ public class DeployState implements Serializable {
     private String backupVersion;    // 回滚用的旧版本
     private String lastError;        // 最近一次错误信息
     private String buildLog;         // 构建日志（供 LLM 分析）
-    private String extra ; // 扩展字段
+    // extra 用 Jackson 序列化为 JSON 字符串落库，避免 MyBatis-Plus 无法直接映射 Map 列
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private Map<String, Object> extra = new HashMap<>(); // 扩展字段
 
 
 
@@ -186,12 +190,12 @@ public class DeployState implements Serializable {
         this.buildLog = buildLog;
     }
 
-    public void setExtra(String extra) {
-        this.extra = extra;
+    public Map<String, Object> getExtra() {
+        return extra;
     }
 
-    public String getExtra() {
-        return extra;
+    public void setExtra(Map<String, Object> extra) {
+        this.extra = extra;
     }
 
     @Override

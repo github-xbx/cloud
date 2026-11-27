@@ -7,11 +7,13 @@ import com.ai.langgraph.utils.CommandRunner.Result;
 import com.ai.langgraph.utils.FileUtil;
 import com.ai.langgraph.utils.ProjectBuilder;
 import com.ai.langgraph.utils.SshChannel;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.Map;
 
 /**
  * 工作流节点集合：每个节点是一个纯函数，输入/输出 DeployState。
@@ -44,11 +46,23 @@ public class DeployNode {
 
 
 
+    private static final ObjectMapper JSON = new ObjectMapper();
+
     private static String toJson(DeployState s) {
-        return "{\"taskId\":\"" + s.getTaskId() + "\",\"status\":\"" + s.getStatus()
-                + "\",\"projectType\":\"" + s.getProjectType() + "\",\"deployMode\":\""
-                + s.getDeployMode() + "\",\"version\":\"" + s.getVersion() + "\",\"suggestion\":\""
-                + s.getExtra() + "\"}";
+        try {
+            Map<String, Object> m = Map.of(
+                    "taskId", s.getTaskId() == null ? "" : s.getTaskId(),
+                    "status", s.getStatus() == null ? "" : s.getStatus(),
+                    "projectType", s.getProjectType() == null ? "" : s.getProjectType(),
+                    "deployMode", s.getDeployMode() == null ? "" : s.getDeployMode(),
+                    "version", s.getVersion() == null ? "" : s.getVersion(),
+                    "suggestion", s.getExtra().get("llmSuggestion") == null ? "" : s.getExtra().get("llmSuggestion")
+            );
+            return JSON.writeValueAsString(m);
+        } catch (Exception e) {
+            logger.warn("序列化结果 JSON 失败: {}", e.getMessage());
+            return "{}";
+        }
     }
 
     /**
@@ -84,7 +98,7 @@ public class DeployNode {
             return state;
         } catch (Exception e) {
             state.fail("fetch", e.getMessage());
-            state.setExtra( "[拉取失败，无需 LLM 分析]");
+            state.getExtra().put("llmHint", "[拉取失败，无需 LLM 分析]");
             return state;
         }
 
@@ -108,11 +122,11 @@ public class DeployNode {
             state.setBuildLog(e.buildLog);
             state.fail("build", e.getMessage());
             // 构建失败 → 标记需要 LLM 分析
-            state.setExtra("needLlm = "+ true);
+            state.getExtra().put("needLlm", true);
             return state;
         } catch (Exception e) {
             state.fail("build", e.getMessage());
-            state.setExtra("needLlm = "+ true);
+            state.getExtra().put("needLlm", true);
             return state;
         }
     }
@@ -190,7 +204,7 @@ public class DeployNode {
             return state;
         } catch (Exception e) {
             state.fail("deploy", e.getMessage());
-            state.setExtra("needRollback="+ true);
+            state.getExtra().put("needRollback", true);
             return state;
         }
     }
@@ -221,12 +235,14 @@ public class DeployNode {
                 return state;
             } else {
                 state.fail("verify", "健康检查未通过");
-                state.setExtra("needRollback = "+ true + "needLlm="+ true);
+                state.getExtra().put("needRollback", true);
+                state.getExtra().put("needLlm", true);
                 return state;
             }
         } catch (Exception e) {
             state.fail("verify", e.getMessage());
-            state.setExtra("needRollback = "+ true + "needLlm="+ true);
+            state.getExtra().put("needRollback", true);
+            state.getExtra().put("needLlm", true);
             return state;
         }
     }
@@ -244,17 +260,16 @@ public class DeployNode {
                 if ("docker".equalsIgnoreCase(state.getDeployMode())) {
                     ssh.exec("cd " + deployDir + " && docker compose up -d");
                 }
-                state.setStatus("ROLLED_BACK");
+                state.advance("ROLLED_BACK", "rollback");
                 logger.info("[{}] 已回滚到旧版本: {}", state.getTaskId(), state.getBackupVersion());
             } else {
-                state.setStatus("ROLLED_BACK");
+                state.advance("ROLLED_BACK", "rollback");
                 logger.warn("[{}] 无备份版本，仅清理", state.getTaskId());
             }
-            state.advance("ROLLED_BACK", "rollback");
             return state;
         } catch (Exception e) {
-            state.setLastError("回滚失败: " + e.getMessage());
-            state.advance("ROLLED_BACK", "rollback");
+            // 回滚也失败：保留失败状态与错误信息，而不是用 ROLLED_BACK 覆盖掉
+            state.fail("rollback", "回滚失败: " + e.getMessage());
             return state;
         }
     }
@@ -263,18 +278,19 @@ public class DeployNode {
      * 节点7 大模型解析失败原因
      */
     public DeployState node7llm(DeployState state){
-       /* if (!llm.isEnabled()) {
-            state.setExtra("llmSuggestion", "[未配置 LLM]");
-            return state;
-        }*/
         logger.info("[{}] LLM 分析失败原因", state.getTaskId());
         String suggestion;
-        if ("build".equals(state.getStage()) || state.getBuildLog() != null) {
+        // 用 stage 判断失败发生在哪一步：build 失败走构建分析，否则走部署分析。
+        // 注意：build 节点失败时 fail("build", ...) 会把 stage 置为 "build"；
+        //      部署/验证失败时 stage 为 "deploy"/"verify"，且 buildLog 为空。
+        boolean isBuildFailure = "build".equals(state.getStage())
+                || (state.getBuildLog() != null && !state.getBuildLog().isBlank());
+        if (isBuildFailure) {
             suggestion = deployLLMService.analyzeBuildFailure(state.getProjectType(), state.getBuildLog());
         } else {
             suggestion = deployLLMService.analyzeDeployFailure(state.getProjectType(), state.getLastError());
         }
-        state.setExtra("llmSuggestion = "+ suggestion);
+        state.getExtra().put("llmSuggestion", suggestion);
         return state;
     }
 

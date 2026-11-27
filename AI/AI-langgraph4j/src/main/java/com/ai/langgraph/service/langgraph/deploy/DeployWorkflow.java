@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class DeployWorkflow {
@@ -131,10 +132,41 @@ public class DeployWorkflow {
      */
     public DeployState run(String taskId, String projectPath, String sourceType,
                            String projectType, String deployMode, String version) {
+        validateInputs(taskId, projectPath, sourceType, projectType, deployMode);
         DeployState init = new DeployState()
                 .withId(taskId)
                 .withProject(projectPath, sourceType, projectType, deployMode, version);
         return execute(taskId, init);
+    }
+
+    /**
+     * 对外部输入做白名单校验，防止 shell 命令注入。
+     * taskId 会拼进远程命令（如容器名 app_<taskId>），projectPath 会拼进 git clone。
+     */
+    private void validateInputs(String taskId, String projectPath, String sourceType,
+                                String projectType, String deployMode) {
+        // taskId 只允许字母/数字/下划线/连字符，杜绝 shell 元字符注入
+        if (taskId == null || !taskId.matches("[A-Za-z0-9_-]{1,64}")) {
+            throw new IllegalArgumentException("非法的 taskId：" + taskId);
+        }
+        // sourceType / projectType / deployMode 走白名单
+        if (sourceType == null || !Set.of("local", "git").contains(sourceType.toLowerCase())) {
+            throw new IllegalArgumentException("非法的 sourceType：" + sourceType);
+        }
+        if (projectType == null || !Set.of("java", "ts", "typescript", "vue", "python").contains(projectType.toLowerCase())) {
+            throw new IllegalArgumentException("非法的 projectType：" + projectType);
+        }
+        if (deployMode == null || !Set.of("docker", "direct").contains(deployMode.toLowerCase())) {
+            throw new IllegalArgumentException("非法的 deployMode：" + deployMode);
+        }
+        // git 地址：只允许 http(s)/ssh 协议 URL，禁止 shell 元字符（空格、分号、|、&、$、` 等）
+        if ("git".equalsIgnoreCase(sourceType)) {
+            if (projectPath == null
+                    || !projectPath.matches("^(https?|git|ssh)://[A-Za-z0-9._@:/~-]+$")
+                            && !projectPath.matches("^[A-Za-z0-9._-]+@[A-Za-z0-9._-]+:[A-Za-z0-9._/ -]+$")) {
+                throw new IllegalArgumentException("非法的 git 仓库地址：" + projectPath);
+            }
+        }
     }
 
     /**
